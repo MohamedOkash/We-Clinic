@@ -2,7 +2,7 @@ import { useState } from 'react';
 import {
   LogOut, Globe, Activity, Users, Package, ScanLine, User, LayoutDashboard,
   Building2, Sun, Moon, Sparkles, Pill, MessageSquare, FileText, Calendar,
-  UploadCloud, FolderOpen, Bot, Bell, AlertTriangle, Menu, X, UserPlus, Lock
+  UploadCloud, FolderOpen, Bot, Bell, AlertTriangle, Menu, X, UserPlus, Lock, Shield, Settings
 } from 'lucide-react';
 import { ClinicProvider, useClinic } from './contexts/ClinicContext';
 import { ToastContainer, useToast } from './hooks/useToast';
@@ -16,6 +16,7 @@ import RadiologyView    from './views/RadiologyView';
 import PatientPortal    from './views/PatientPortal';
 import ManagerView      from './views/ManagerView';
 import AdminView        from './views/AdminView';
+import AccountSettingsView from './views/AccountSettingsView';
 
 // ─── Background ───────────────────────────────────────────────────────────────
 function Background() {
@@ -52,42 +53,49 @@ const SIDEBAR_ITEMS = {
     { page: 'registry',       label: 'Patients Registry',   labelAr: 'سجل المرضى',          icon: Users },
     { page: 'examination',    label: 'Exam & Diagnosis',    labelAr: 'غرفة الكشف والأعراض',  icon: Activity },
     { page: 'labOrders',      label: 'Lab & Scan Orders',   labelAr: 'طلبات الفحوصات والأشعة', icon: ScanLine },
-    { page: 'aiPrescription', label: 'AI Copilot & Rx',     labelAr: 'الروشتة والذكاء الاصطناعي', icon: Sparkles }
+    { page: 'aiPrescription', label: 'AI Copilot & Rx',     labelAr: 'الروشتة والذكاء الاصطناعي', icon: Sparkles },
+    { page: 'account',        label: 'Account Settings',    labelAr: 'إعدادات الحساب',       icon: Settings }
   ],
   pharmacy: [
     { page: 'pos',            label: 'Medication POS',      labelAr: 'بيع مباشر POS',      icon: Package },
     { page: 'prescriptions',  label: 'Rx Dispensing',      labelAr: 'صرف الروشتات',        icon: Pill },
     { page: 'inventory',      label: 'Medication Inventory', labelAr: 'مستودع الأدوية',       icon: Package },
     { page: 'inquiries',      label: 'Doctor Inquiries',    labelAr: 'استفسارات الأطباء',    icon: MessageSquare },
-    { page: 'invoices',       label: 'Sales Invoices',      labelAr: 'سجل المبيعات',        icon: FileText }
+    { page: 'invoices',       label: 'Sales Invoices',      labelAr: 'سجل المبيعات',        icon: FileText },
+    { page: 'account',        label: 'Account Settings',    labelAr: 'إعدادات الحساب',       icon: Settings }
   ],
   receptionist: [
     { page: 'register',       label: 'Patient Registration', labelAr: 'تسجيل مريض جديد',      icon: UserPlus },
     { page: 'search',         label: 'Waiting Queue Room',  labelAr: 'طابور الكشف الطبي',    icon: Users },
-    { page: 'appointments',   label: 'Book Consultation',   labelAr: 'حجز المواعيد',         icon: Calendar }
+    { page: 'appointments',   label: 'Book Consultation',   labelAr: 'حجز المواعيد',         icon: Calendar },
+    { page: 'account',        label: 'Account Settings',    labelAr: 'إعدادات الحساب',       icon: Settings }
   ],
   radiology: [
     { page: 'orders',         label: 'Incoming Orders',     labelAr: 'طلبات الفحوصات',      icon: ScanLine },
     { page: 'upload',         label: 'Upload Results',      labelAr: 'رفع التقارير والأشعة',  icon: UploadCloud },
-    { page: 'history',        label: 'Scans Archive',       labelAr: 'أرشيف التحاليل والأشعة', icon: FolderOpen }
+    { page: 'history',        label: 'Scans Archive',       labelAr: 'أرشيف التحاليل والأشعة', icon: FolderOpen },
+    { page: 'account',        label: 'Account Settings',    labelAr: 'إعدادات الحساب',       icon: Settings }
   ],
   patient: [
     { page: 'home',           label: 'Health Board',        labelAr: 'لوحتي الطبية',         icon: LayoutDashboard },
     { page: 'ai',             label: 'AI Health Companion', labelAr: 'طبيب الـ AI الفوري',   icon: Bot },
     { page: 'book',           label: 'Book Appointment',    labelAr: 'حجز موعد جديد',       icon: Calendar },
-    { page: 'alarms',         label: 'Medication Alarms',   labelAr: 'منبه جرعات الدواء',     icon: Bell }
+    { page: 'alarms',         label: 'Medication Alarms',   labelAr: 'منبه جرعات الدواء',     icon: Bell },
+    { page: 'account',        label: 'Account Settings',    labelAr: 'إعدادات الحساب',       icon: Settings }
   ],
   manager: [
     { page: 'dashboard',      label: 'Executive Dashboard', labelAr: 'لوحة تحكم المدير',      icon: LayoutDashboard },
     { page: 'patients',       label: 'Patients List',       labelAr: 'سجل المرضى الكلي',     icon: Users },
-    { page: 'inventory',      label: 'Inventory Alerts',    labelAr: 'تنبيهات المخازن',      icon: AlertTriangle }
+    { page: 'inventory',      label: 'Inventory Alerts',    labelAr: 'تنبيهات المخازن',      icon: AlertTriangle },
+    { page: 'account',        label: 'Account Settings',    labelAr: 'إعدادات الحساب',       icon: Settings }
   ],
   admin: [
     { page: 'organizations',  label: 'Facilities Manager',  labelAr: 'المنشآت والجهات',      icon: Building2 },
     { page: 'users',          label: 'System Users',        labelAr: 'حسابات ومستخدمو النظام', icon: Users },
     { page: 'patients',       label: 'Patients Registry',   labelAr: 'سجل المرضى الكلي',     icon: User },
     { page: 'inventory',      label: 'Global Inventory',    labelAr: 'مستودع الأدوية العام', icon: Pill },
-    { page: 'security',       label: 'Security Settings',   labelAr: 'إعدادات الأمان',       icon: Lock }
+    { page: 'security',       label: 'Security Settings',   labelAr: 'إعدادات الأمان',       icon: Lock },
+    { page: 'account',        label: 'Account Settings',    labelAr: 'إعدادات الحساب',       icon: Settings }
   ]
 };
 
@@ -231,7 +239,14 @@ function TopNav() {
       </div>
 
       <div className="flex items-center gap-3">
-        {currentOrganization && (
+        {role === 'admin' ? (
+          <div className="hidden sm:flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-cyan-500/10 border border-cyan-500/20 dark:border-cyan-400/20 min-w-0 shadow-inner">
+            <Shield className="w-4 h-4 text-cyan-600 dark:text-cyan-400 shrink-0" />
+            <span className="font-black text-cyan-900 dark:text-cyan-100 text-xs truncate max-w-[200px]">
+              {isAr ? 'إدارة النظام العام' : 'System Administration'}
+            </span>
+          </div>
+        ) : currentOrganization && (
           <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/5 dark:bg-black/40 border border-emerald-500/10 dark:border-white/10 min-w-0">
             <Building2 className="w-4 h-4 text-emerald-600 dark:text-emerald-300 shrink-0" />
             <span className="font-black text-emerald-900 dark:text-white text-xs truncate max-w-[200px]">
@@ -247,7 +262,10 @@ function TopNav() {
 
 // ─── Role Router ─────────────────────────────────────────────────────────────
 function RoleView() {
-  const { role } = useClinic();
+  const { role, activePage } = useClinic();
+  if (activePage === 'account') {
+    return <AccountSettingsView />;
+  }
   switch (role) {
     case 'receptionist': return <ReceptionistView />;
     case 'doctor':       return <DoctorWorkspace />;
@@ -262,37 +280,7 @@ function RoleView() {
 
 // ─── Inner App ────────────────────────────────────────────────────────────────
 function InnerApp() {
-  const { isLoggedIn, changeUserPassword, isAr } = useClinic();
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [currentPassword, setCurrentPassword] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const toast = useToast();
-
-  const handlePasswordChange = async () => {
-    if (!currentPassword) {
-      toast.error(isAr ? 'يرجى إدخال كلمة المرور الحالية' : 'Please enter current password');
-      return;
-    }
-    if (!newPassword) {
-      toast.error(isAr ? 'يرجى إدخال كلمة المرور الجديدة' : 'Please enter new password');
-      return;
-    }
-    if (newPassword !== confirmPassword) {
-      toast.error(isAr ? 'كلمتا المرور غير متطابقتين' : 'Passwords do not match');
-      return;
-    }
-    try {
-      await changeUserPassword(currentPassword, newPassword);
-      toast.success(isAr ? 'تم تغيير كلمة المرور بنجاح!' : 'Password changed successfully!');
-      setIsSettingsOpen(false);
-      setCurrentPassword('');
-      setNewPassword('');
-      setConfirmPassword('');
-    } catch (err) {
-      toast.error(err.message || (isAr ? 'خطأ أثناء تغيير كلمة المرور' : 'Error changing password'));
-    }
-  };
+  const { isLoggedIn, setActivePage } = useClinic();
 
   if (!isLoggedIn) {
     return (
@@ -306,7 +294,7 @@ function InnerApp() {
   return (
     <div className="h-screen w-screen flex overflow-hidden relative">
       <Background />
-      <Sidebar onOpenSettings={() => setIsSettingsOpen(true)} />
+      <Sidebar onOpenSettings={() => setActivePage('account')} />
       <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
         <TopNav />
         <main className="flex-1 overflow-hidden p-3 md:p-4">
@@ -314,48 +302,6 @@ function InnerApp() {
         </main>
       </div>
       <ToastContainer />
-
-      {/* Account Settings / Password Reset Modal for clinical roles */}
-      <GlassModal 
-        isOpen={isSettingsOpen} 
-        onClose={() => {
-          setIsSettingsOpen(false);
-          setCurrentPassword('');
-          setNewPassword('');
-          setConfirmPassword('');
-        }}
-        title={isAr ? 'إعدادات الحساب وتغيير كلمة المرور' : 'Account Settings & Change Password'}
-      >
-        <div className="flex flex-col gap-4">
-          <Input 
-            label={isAr ? 'كلمة المرور الحالية' : 'Current Password'} 
-            type="password" 
-            placeholder="••••••••"
-            value={currentPassword} 
-            onChange={e => setCurrentPassword(e.target.value)} 
-          />
-          <Input 
-            label={isAr ? 'كلمة المرور الجديدة' : 'New Password'} 
-            type="password" 
-            placeholder="••••••••"
-            value={newPassword} 
-            onChange={e => setNewPassword(e.target.value)} 
-          />
-          <Input 
-            label={isAr ? 'تأكيد كلمة المرور الجديدة' : 'Confirm New Password'} 
-            type="password" 
-            placeholder="••••••••"
-            value={confirmPassword} 
-            onChange={e => setConfirmPassword(e.target.value)} 
-          />
-          <button 
-            onClick={handlePasswordChange} 
-            className={`${s.btnPrimary} w-full mt-4`}
-          >
-            <Lock className="w-5 h-5" /> {isAr ? 'تحديث كلمة المرور' : 'Update Password'}
-          </button>
-        </div>
-      </GlassModal>
     </div>
   );
 }
