@@ -1,7 +1,8 @@
 import { useState, useMemo } from 'react';
 import { 
   Building2, Users, User, Plus, Trash2, Edit3, Save, Lock, Shield, 
-  Search, CheckCircle, AlertCircle, Trash, Pill, RefreshCw, Settings
+  Search, CheckCircle, AlertCircle, Trash, Pill, RefreshCw, Settings,
+  ChevronDown
 } from 'lucide-react';
 import { useClinic } from '../contexts/ClinicContext';
 import { Card, InnerCard, Input, s, GlassModal } from '../components/shared';
@@ -567,22 +568,32 @@ export default function AdminView() {
           
           <div className="flex flex-col gap-2">
             <label className={s.label}>{isAr ? 'نوع المنشأة' : 'Facility Type'}</label>
-            <select className={s.input} value={orgForm.type} onChange={e => setOrgForm({ ...orgForm, type: e.target.value })}>
-              <option value="clinic">{isAr ? 'عيادة طبية' : 'Clinic'}</option>
-              <option value="pharmacy">{isAr ? 'صيدلية' : 'Pharmacy'}</option>
-              <option value="lab">{isAr ? 'معمل تحاليل' : 'Laboratory'}</option>
-              <option value="radiology">{isAr ? 'مركز أشعة' : 'Radiology Center'}</option>
-            </select>
+            <div className="relative w-full">
+              <select className={`${s.input} w-full appearance-none cursor-pointer pe-10 ps-4`} value={orgForm.type} onChange={e => setOrgForm({ ...orgForm, type: e.target.value })}>
+                <option value="clinic">{isAr ? 'عيادة طبية' : 'Clinic'}</option>
+                <option value="pharmacy">{isAr ? 'صيدلية' : 'Pharmacy'}</option>
+                <option value="lab">{isAr ? 'معمل تحاليل' : 'Laboratory'}</option>
+                <option value="radiology">{isAr ? 'مركز أشعة' : 'Radiology Center'}</option>
+              </select>
+              <div className="absolute inset-y-0 end-0 flex items-center pe-4 pointer-events-none">
+                <ChevronDown className="w-5 h-5 text-emerald-500/80" />
+              </div>
+            </div>
           </div>
 
           {orgForm.type === 'clinic' && (
             <div className="flex flex-col gap-2 animate-in fade-in">
               <label className={s.label}>{isAr ? 'التخصص الطبي للعيادة' : 'Medical Specialty'}</label>
-              <select className={s.input} value={orgForm.specialty} onChange={e => setOrgForm({ ...orgForm, specialty: e.target.value })}>
-                {SPECIALTIES.map(sp => (
-                  <option key={sp.id} value={sp.id}>{isAr ? sp.ar : sp.en}</option>
-                ))}
-              </select>
+              <div className="relative w-full">
+                <select className={`${s.input} w-full appearance-none cursor-pointer pe-10 ps-4`} value={orgForm.specialty} onChange={e => setOrgForm({ ...orgForm, specialty: e.target.value })}>
+                  {SPECIALTIES.map(sp => (
+                    <option key={sp.id} value={sp.id}>{isAr ? sp.ar : sp.en}</option>
+                  ))}
+                </select>
+                <div className="absolute inset-y-0 end-0 flex items-center pe-4 pointer-events-none">
+                  <ChevronDown className="w-5 h-5 text-emerald-500/80" />
+                </div>
+              </div>
             </div>
           )}
 
@@ -613,40 +624,55 @@ export default function AdminView() {
 
           <div className="flex flex-col gap-2">
             <label className={s.label}>{isAr ? 'دور الحساب (Role)' : 'Account Role'}</label>
-            <select className={s.input} value={userForm.role} onChange={e => setUserForm({ ...userForm, role: e.target.value })}>
-              <option value="doctor">{isAr ? 'طبيب' : 'Doctor'}</option>
-              <option value="receptionist">{isAr ? 'موظف استقبال' : 'Receptionist'}</option>
-              <option value="pharmacy">{isAr ? 'صيدلي' : 'Pharmacist'}</option>
-              <option value="radiology">{isAr ? 'فني معمل/أشعة' : 'Lab Tech'}</option>
-              <option value="manager">{isAr ? 'مدير منشأة' : 'Facility Manager'}</option>
-            </select>
+            <div className="relative w-full">
+              <select className={`${s.input} w-full appearance-none cursor-pointer pe-10 ps-4`} value={userForm.role} onChange={e => setUserForm({ ...userForm, role: e.target.value })}>
+                <option value="doctor">{isAr ? 'طبيب' : 'Doctor'}</option>
+                <option value="receptionist">{isAr ? 'موظف استقبال' : 'Receptionist'}</option>
+                <option value="pharmacy">{isAr ? 'صيدلي' : 'Pharmacist'}</option>
+                <option value="radiology">{isAr ? 'فني معمل/أشعة' : 'Lab Tech'}</option>
+                <option value="manager">{isAr ? 'مدير منشأة' : 'Facility Manager'}</option>
+              </select>
+              <div className="absolute inset-y-0 end-0 flex items-center pe-4 pointer-events-none">
+                <ChevronDown className="w-5 h-5 text-emerald-500/80" />
+              </div>
+            </div>
           </div>
 
           {userForm.role === 'doctor' && (
             <div className="flex flex-col gap-2 animate-in fade-in">
               <label className={s.label}>{isAr ? 'التخصص الطبي' : 'Specialty'}</label>
-              <select className={s.input} value={userForm.specialty} onChange={e => setUserForm({ ...userForm, specialty: e.target.value })}>
-                {SPECIALTIES.map(sp => (
-                  <option key={sp.id} value={sp.id}>{isAr ? sp.ar : sp.en}</option>
-                ))}
-              </select>
+              <div className="relative w-full">
+                <select className={`${s.input} w-full appearance-none cursor-pointer pe-10 ps-4`} value={userForm.specialty} onChange={e => setUserForm({ ...userForm, specialty: e.target.value })}>
+                  {SPECIALTIES.map(sp => (
+                    <option key={sp.id} value={sp.id}>{isAr ? sp.ar : sp.en}</option>
+                  ))}
+                </select>
+                <div className="absolute inset-y-0 end-0 flex items-center pe-4 pointer-events-none">
+                  <ChevronDown className="w-5 h-5 text-emerald-500/80" />
+                </div>
+              </div>
             </div>
           )}
 
           <div className="flex flex-col gap-2">
             <label className={s.label}>{isAr ? 'الجهة الطبية التابع لها' : 'Assigned Organization'}</label>
-            <select className={s.input} value={userForm.organizationId} onChange={e => setUserForm({ ...userForm, organizationId: e.target.value })}>
-              {organizations
-                .filter(org => {
-                  if (userForm.role === 'doctor' || userForm.role === 'receptionist') return org.type === 'clinic';
-                  if (userForm.role === 'pharmacy') return org.type === 'pharmacy';
-                  if (userForm.role === 'radiology') return org.type === 'lab' || org.type === 'radiology';
-                  return true;
-                })
-                .map(org => (
-                  <option key={org.id} value={org.id}>{isAr ? org.nameAr : org.name}</option>
-                ))}
-            </select>
+            <div className="relative w-full">
+              <select className={`${s.input} w-full appearance-none cursor-pointer pe-10 ps-4`} value={userForm.organizationId} onChange={e => setUserForm({ ...userForm, organizationId: e.target.value })}>
+                {organizations
+                  .filter(org => {
+                    if (userForm.role === 'doctor' || userForm.role === 'receptionist') return org.type === 'clinic';
+                    if (userForm.role === 'pharmacy') return org.type === 'pharmacy';
+                    if (userForm.role === 'radiology') return org.type === 'lab' || org.type === 'radiology';
+                    return true;
+                  })
+                  .map(org => (
+                    <option key={org.id} value={org.id}>{isAr ? org.nameAr : org.name}</option>
+                  ))}
+              </select>
+              <div className="absolute inset-y-0 end-0 flex items-center pe-4 pointer-events-none">
+                <ChevronDown className="w-5 h-5 text-emerald-500/80" />
+              </div>
+            </div>
           </div>
 
           <button onClick={handleSaveUser} className={`${s.btnPrimary} w-full mt-4`}>
@@ -667,10 +693,15 @@ export default function AdminView() {
             <Input label={isAr ? 'تاريخ الميلاد' : 'Date of Birth'} type="date" value={patientForm.dob} onChange={e => setPatientForm({ ...patientForm, dob: e.target.value })} />
             <div className="flex flex-col gap-2">
               <label className={s.label}>{isAr ? 'الجنس' : 'Gender'}</label>
-              <select className={s.input} value={patientForm.gender} onChange={e => setPatientForm({ ...patientForm, gender: e.target.value })}>
-                <option value="male">{isAr ? 'ذكر' : 'Male'}</option>
-                <option value="female">{isAr ? 'أنثى' : 'Female'}</option>
-              </select>
+              <div className="relative w-full">
+                <select className={`${s.input} w-full appearance-none cursor-pointer pe-10 ps-4`} value={patientForm.gender} onChange={e => setPatientForm({ ...patientForm, gender: e.target.value })}>
+                  <option value="male">{isAr ? 'ذكر' : 'Male'}</option>
+                  <option value="female">{isAr ? 'أنثى' : 'Female'}</option>
+                </select>
+                <div className="absolute inset-y-0 end-0 flex items-center pe-4 pointer-events-none">
+                  <ChevronDown className="w-5 h-5 text-emerald-500/80" />
+                </div>
+              </div>
             </div>
           </div>
 
@@ -693,13 +724,18 @@ export default function AdminView() {
 
           <div className="flex flex-col gap-2">
             <label className={s.label}>{isAr ? 'الصيدلية' : 'Pharmacy Assignment'}</label>
-            <select className={s.input} value={medForm.organizationId} onChange={e => setMedForm({ ...medForm, organizationId: e.target.value })}>
-              {organizations
-                .filter(org => org.type === 'pharmacy')
-                .map(org => (
-                  <option key={org.id} value={org.id}>{isAr ? org.nameAr : org.name}</option>
-                ))}
-            </select>
+            <div className="relative w-full">
+              <select className={`${s.input} w-full appearance-none cursor-pointer pe-10 ps-4`} value={medForm.organizationId} onChange={e => setMedForm({ ...medForm, organizationId: e.target.value })}>
+                {organizations
+                  .filter(org => org.type === 'pharmacy')
+                  .map(org => (
+                    <option key={org.id} value={org.id}>{isAr ? org.nameAr : org.name}</option>
+                  ))}
+              </select>
+              <div className="absolute inset-y-0 end-0 flex items-center pe-4 pointer-events-none">
+                <ChevronDown className="w-5 h-5 text-emerald-500/80" />
+              </div>
+            </div>
           </div>
 
           <button onClick={handleSaveMed} className={`${s.btnPrimary} w-full mt-4`}>

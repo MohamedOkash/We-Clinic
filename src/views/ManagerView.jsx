@@ -1,6 +1,7 @@
 import { Users, ClipboardList, DollarSign, Package, Activity, AlertTriangle, BarChart2, TrendingUp } from 'lucide-react';
 import { useClinic } from '../contexts/ClinicContext';
 import { Card, InnerCard, s } from '../components/shared';
+import ResponsiveTable from '../components/shared/ResponsiveTable';
 
 function StatCard({ icon: Icon, label, value, color, sub }) {
   return (
@@ -178,34 +179,46 @@ export default function ManagerView() {
         <h3 className="font-black text-white text-xl flex items-center gap-2">
           <Users className="w-6 h-6 text-cyan-400" /> {t('patientsRegistry')}
         </h3>
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="text-slate-400 font-bold border-b border-white/10">
-                <th className="text-start py-3 pe-4">#</th>
-                <th className="text-start py-3 pe-4">{isAr ? 'الاسم' : 'Name'}</th>
-                <th className="text-start py-3 pe-4">{isAr ? 'الهاتف' : 'Phone'}</th>
-                <th className="text-start py-3 pe-4">{isAr ? 'آخر زيارة' : 'Last Visit'}</th>
-                <th className="text-start py-3">{isAr ? 'الحالة' : 'Status'}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {patients.map((p, i) => (
-                <tr key={p.id} className="border-b border-white/5 hover:bg-white/5 transition-colors">
-                  <td className="py-3 pe-4 font-black text-cyan-400">{i + 1}</td>
-                  <td className="py-3 pe-4 font-bold text-white">{isAr ? p.nameAr : p.name}</td>
-                  <td className="py-3 pe-4 text-slate-400">{p.phone}</td>
-                  <td className="py-3 pe-4 text-slate-400">{p.lastVisit}</td>
-                  <td className="py-3">
-                    <span className={`${s.badge} ${p.status === 'Waiting' ? '!bg-amber-500/20 !text-amber-400 !border-amber-400/50' : '!bg-cyan-500/20 !text-cyan-400 !border-cyan-400/50'}`}>
-                      {p.status}
-                    </span>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <ResponsiveTable
+          headers={[
+            '#',
+            isAr ? 'الاسم' : 'Name',
+            isAr ? 'الهاتف' : 'Phone',
+            isAr ? 'آخر زيارة' : 'Last Visit',
+            isAr ? 'الحالة' : 'Status'
+          ]}
+          data={patients}
+          renderRow={(p, i) => (
+            <tr key={p.id} className="border-b border-emerald-500/5 dark:border-white/5 hover:bg-emerald-500/5 dark:hover:bg-white/5 transition-colors text-emerald-950 dark:text-slate-100">
+              <td className="px-5 py-3 font-black text-cyan-500">{i + 1}</td>
+              <td className="px-5 py-3 font-bold text-emerald-900 dark:text-white">{isAr ? p.nameAr : p.name}</td>
+              <td className="px-5 py-3 text-emerald-700 dark:text-slate-400">{p.phone}</td>
+              <td className="px-5 py-3 text-emerald-700 dark:text-slate-400">{p.lastVisit}</td>
+              <td className="px-5 py-3">
+                <span className={`${s.badge} ${p.status === 'Waiting' ? '!bg-amber-500/20 !text-amber-400 !border-amber-400/50' : '!bg-cyan-500/20 !text-cyan-400 !border-cyan-400/50'}`}>
+                  {p.status}
+                </span>
+              </td>
+            </tr>
+          )}
+          renderCard={(p, i) => (
+            <InnerCard key={p.id} className="flex flex-col gap-3">
+              <div className="flex justify-between items-center">
+                <div className="flex items-center gap-3">
+                  <span className="font-black text-cyan-400 text-lg">#{i + 1}</span>
+                  <h4 className="font-bold text-white text-lg">{isAr ? p.nameAr : p.name}</h4>
+                </div>
+                <span className={`${s.badge} ${p.status === 'Waiting' ? '!bg-amber-500/20 !text-amber-400 !border-amber-400/50' : '!bg-cyan-500/20 !text-cyan-400 !border-cyan-400/50'}`}>
+                  {p.status}
+                </span>
+              </div>
+              <div className="flex flex-col gap-1 text-sm border-t border-white/5 pt-2">
+                <p className="text-slate-400"><strong className="text-slate-300">{isAr ? 'الهاتف:' : 'Phone:'}</strong> {p.phone}</p>
+                <p className="text-slate-400"><strong className="text-slate-300">{isAr ? 'آخر زيارة:' : 'Last Visit:'}</strong> {p.lastVisit}</p>
+              </div>
+            </InnerCard>
+          )}
+        />
       </Card>
     </div>
   );

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import {
   Search, Package, CheckCircle, MessageSquare, Plus, PlusCircle,
-  FileText, ShoppingCart, Minus, Trash2, Printer, Settings
+  FileText, ShoppingCart, Minus, Trash2, Printer, Settings, ChevronDown
 } from 'lucide-react';
 import { useClinic } from '../contexts/ClinicContext';
 import AccountSettingsView from './AccountSettingsView';
@@ -347,15 +347,20 @@ export default function PharmacyView() {
 
               <div className="flex flex-col gap-2 pt-3 border-t border-white/10">
                 <label className="text-sm font-bold text-slate-300 px-1">{isAr ? 'طريقة الدفع' : 'Payment method'}</label>
-                <select
-                  value={paymentMethod}
-                  onChange={e => setPaymentMethod(e.target.value)}
-                  className={`${s.input} appearance-none cursor-pointer bg-black/50`}
-                >
-                  <option value="cash">{isAr ? 'نقدي' : 'Cash'}</option>
-                  <option value="card">{isAr ? 'بطاقة' : 'Card'}</option>
-                  <option value="wallet">{isAr ? 'محفظة إلكترونية' : 'Wallet'}</option>
-                </select>
+                <div className="relative w-full">
+                  <select
+                    value={paymentMethod}
+                    onChange={e => setPaymentMethod(e.target.value)}
+                    className={`${s.input} appearance-none cursor-pointer pe-10 ps-4 bg-black/50`}
+                  >
+                    <option value="cash">{isAr ? 'نقدي' : 'Cash'}</option>
+                    <option value="card">{isAr ? 'بطاقة' : 'Card'}</option>
+                    <option value="wallet">{isAr ? 'محفظة إلكترونية' : 'Wallet'}</option>
+                  </select>
+                  <div className="absolute inset-y-0 end-0 flex items-center pe-4 pointer-events-none">
+                    <ChevronDown className="w-5 h-5 text-emerald-500/80" />
+                  </div>
+                </div>
                 <div className="flex justify-between items-center py-2">
                   <span className="text-slate-400 font-bold">{isAr ? 'الإجمالي' : 'Total'}</span>
                   <span className="text-2xl font-black text-white">{cartTotal} {isAr ? 'ج.م' : 'EGP'}</span>

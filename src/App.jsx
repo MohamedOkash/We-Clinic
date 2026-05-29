@@ -18,6 +18,11 @@ import ManagerView      from './views/ManagerView';
 import AdminView        from './views/AdminView';
 import AccountSettingsView from './views/AccountSettingsView';
 
+// Responsive Components
+import MobileDrawer from './components/shared/MobileDrawer';
+import BottomTabBar from './components/shared/BottomTabBar';
+import { useBreakpoint } from './hooks/useBreakpoint';
+
 // ─── Background ───────────────────────────────────────────────────────────────
 function Background() {
   const { theme } = useClinic();
@@ -101,118 +106,94 @@ const SIDEBAR_ITEMS = {
 
 // ─── Sidebar Component ─────────────────────────────────────────────────────────
 function Sidebar({ onOpenSettings }) {
-  const { role, activePage, setActivePage, isAr, t, loggedUser, handleLogout, theme, setTheme, lang, setLang, isMenuOpen, setIsMenuOpen } = useClinic();
-  const cfg = ROLE_CONFIG[role] || ROLE_CONFIG['doctor'];
+  const { role, activePage, setActivePage, isAr, t, loggedUser, handleLogout, theme, setTheme, lang, setLang } = useClinic();
   const isDark = theme !== 'light';
   const menuItems = SIDEBAR_ITEMS[role] || [];
 
   return (
-    <>
-      {/* Mobile Backdrop overlay */}
-      {isMenuOpen && (
-        <div 
-          onClick={() => setIsMenuOpen(false)}
-          className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm md:hidden animate-fade-in"
-        />
-      )}
+    <aside 
+      className="hidden md:flex flex-col h-full bg-emerald-50/90 dark:bg-emerald-950/20 backdrop-blur-3xl border-e border-emerald-500/10 dark:border-emerald-400/10 transition-all duration-300 z-50 select-none group w-16 lg:w-64 hover:w-64"
+    >
+      {/* Sidebar Header */}
+      <div className="h-16 flex items-center gap-3 px-4 border-b border-emerald-500/10 dark:border-emerald-400/10 overflow-hidden shrink-0">
+        <div className="w-8 h-8 bg-gradient-to-br from-emerald-500 to-teal-700 rounded-xl flex items-center justify-center border border-emerald-300/30 shadow-[0_0_12px_rgba(16,185,129,0.4)] shrink-0">
+          <Activity className="w-4 h-4 text-white keep-text-white" />
+        </div>
+        <span className="font-black text-emerald-900 dark:text-emerald-50 text-base lg:block group-hover:block hidden tracking-tight whitespace-nowrap">{t('appTitle')}</span>
+      </div>
 
-      {/* Sidebar container */}
-      <aside 
-        className={`fixed md:relative top-0 bottom-0 start-0 z-50 w-64 md:w-72 shrink-0 flex flex-col h-full bg-emerald-50/90 dark:bg-emerald-950/20 backdrop-blur-3xl border-e border-emerald-500/10 dark:border-emerald-400/10 transition-transform duration-300 md:translate-x-0
-          ${isMenuOpen ? 'translate-x-0' : isAr ? 'translate-x-full md:translate-x-0' : '-translate-x-full md:translate-x-0'}`}
-      >
-        {/* Sidebar Header */}
-        <div className="h-16 flex items-center justify-between px-6 border-b border-emerald-500/10 dark:border-emerald-400/10">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-gradient-to-br from-emerald-500 to-teal-700 rounded-xl flex items-center justify-center border border-emerald-300/30 shadow-[0_0_12px_rgba(16,185,129,0.4)] shrink-0">
-              <Activity className="w-4 h-4 text-white keep-text-white" />
-            </div>
-            <span className="font-black text-emerald-900 dark:text-emerald-50 text-lg tracking-tight">{t('appTitle')}</span>
+      {/* User profile section */}
+      <div className="p-4 border-b border-emerald-500/10 dark:border-emerald-400/10 flex items-center justify-between gap-3 overflow-hidden shrink-0">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-700 text-white keep-text-white flex items-center justify-center font-black border border-emerald-300/20 shadow-sm shrink-0">
+            {(loggedUser?.name || '?').charAt(0).toUpperCase()}
           </div>
+          <div className="min-w-0 lg:block group-hover:block hidden">
+            <h4 className="font-black text-emerald-950 dark:text-emerald-50 text-xs truncate">{isAr ? loggedUser?.nameAr : loggedUser?.name}</h4>
+            <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-widest">{t(role)}</span>
+          </div>
+        </div>
+        {role !== 'account' && role !== 'admin' && (
           <button 
-            onClick={() => setIsMenuOpen(false)}
-            className="p-1 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white md:hidden"
+            onClick={onOpenSettings}
+            className="p-1.5 text-emerald-700 hover:text-emerald-950 dark:text-emerald-400 dark:hover:text-emerald-50 rounded-lg bg-emerald-500/5 hover:bg-emerald-500/10 border border-emerald-500/10 dark:border-white/5 transition-all shrink-0 lg:block group-hover:block hidden"
+            title={isAr ? 'إعدادات الحساب' : 'Account Settings'}
           >
-            <X className="w-5 h-5" />
+            <Lock className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
           </button>
-        </div>
+        )}
+      </div>
 
-        {/* User profile section */}
-        <div className="p-5 border-b border-emerald-500/10 dark:border-emerald-400/10 flex items-center justify-between gap-3">
-          <div className="flex items-center gap-3 min-w-0">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-700 text-white keep-text-white flex items-center justify-center font-black border border-emerald-300/20 shadow-sm shrink-0">
-              {(loggedUser?.name || '?').charAt(0).toUpperCase()}
-            </div>
-            <div className="min-w-0">
-              <h4 className="font-black text-emerald-950 dark:text-emerald-50 text-sm truncate">{isAr ? loggedUser?.nameAr : loggedUser?.name}</h4>
-              <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-widest">{t(role)}</span>
-            </div>
-          </div>
-          {role !== 'admin' && (
-            <button 
-              onClick={onOpenSettings}
-              className="p-2 text-emerald-700 hover:text-emerald-950 dark:text-emerald-400 dark:hover:text-emerald-50 rounded-xl bg-emerald-500/5 hover:bg-emerald-500/10 border border-emerald-500/10 dark:border-white/5 transition-all shrink-0 animate-pulse"
-              title={isAr ? 'إعدادات الحساب' : 'Account Settings'}
-            >
-              <Lock className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-            </button>
-          )}
-        </div>
-
-        {/* Navigation links */}
-        <nav className="flex-1 overflow-y-auto p-4 flex flex-col gap-1.5 scrollbar-thin">
-          {menuItems.map(item => {
-            const Icon = item.icon;
-            const isActive = activePage === item.page;
-            return (
-              <button
-                key={item.page}
-                onClick={() => {
-                  setActivePage(item.page);
-                  setIsMenuOpen(false);
-                }}
-                className={`flex items-center gap-3.5 px-4 py-3 rounded-2xl font-black text-sm transition-all duration-200 select-none
-                  ${isActive 
-                    ? 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-md shadow-emerald-900/10 dark:shadow-none keep-text-white' 
-                    : 'text-emerald-800 dark:text-emerald-400/80 hover:bg-emerald-500/10 hover:text-emerald-950 dark:hover:text-emerald-50'}`}
-              >
-                <Icon className={`w-4.5 h-4.5 shrink-0 ${isActive ? 'text-white keep-text-white' : 'text-emerald-600 dark:text-emerald-400'}`} />
-                <span>{isAr ? item.labelAr : item.label}</span>
-              </button>
-            );
-          })}
-        </nav>
-
-        {/* Sidebar Footer */}
-        <div className="p-4 border-t border-emerald-500/10 dark:border-emerald-400/10 flex flex-col gap-3 shrink-0">
-          <div className="flex gap-2">
+      {/* Navigation links */}
+      <nav className="flex-1 overflow-y-auto p-2 flex flex-col gap-1.5 scrollbar-thin">
+        {menuItems.map(item => {
+          const Icon = item.icon;
+          const isActive = activePage === item.page;
+          return (
             <button
-              onClick={() => setTheme(isDark ? 'light' : 'dark')}
-              className="flex-1 p-2 bg-emerald-500/5 hover:bg-emerald-500/10 dark:bg-black/30 dark:hover:bg-white/5 border border-emerald-500/10 dark:border-white/5 text-emerald-800 dark:text-emerald-300 hover:text-emerald-950 dark:hover:text-white rounded-xl transition-all flex items-center justify-center gap-2 font-bold text-xs"
-              title={isDark ? 'Switch to Light' : 'Switch to Dark'}
+              key={item.page}
+              onClick={() => setActivePage(item.page)}
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-xl font-black text-xs transition-all duration-200 select-none justify-center lg:justify-start group-hover:justify-start
+                ${isActive 
+                  ? 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-md shadow-emerald-900/10 dark:shadow-none keep-text-white' 
+                  : 'text-emerald-800 dark:text-emerald-400/80 hover:bg-emerald-500/10 hover:text-emerald-950 dark:hover:text-emerald-50'}`}
             >
-              {isDark ? <Sun className="w-4 h-4 text-amber-500 animate-spin-slow" /> : <Moon className="w-4 h-4 text-violet-600" />}
-              <span>{isDark ? (isAr ? 'فاتح' : 'Light') : (isAr ? 'داكن' : 'Dark')}</span>
+              <Icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-white keep-text-white' : 'text-emerald-600 dark:text-emerald-400'}`} />
+              <span className="lg:inline group-hover:inline hidden whitespace-nowrap">{isAr ? item.labelAr : item.label}</span>
             </button>
-            <button
-              onClick={() => setLang(lang === 'ar' ? 'en' : 'ar')}
-              className="flex-1 p-2 bg-emerald-500/5 hover:bg-emerald-500/10 dark:bg-black/30 dark:hover:bg-white/5 border border-emerald-500/10 dark:border-white/5 text-emerald-800 dark:text-emerald-300 hover:text-emerald-950 dark:hover:text-white rounded-xl transition-all flex items-center justify-center gap-2 font-bold text-xs"
-            >
-              <Globe className="w-4 h-4" />
-              <span>{lang === 'ar' ? 'English' : 'عربي'}</span>
-            </button>
-          </div>
+          );
+        })}
+      </nav>
 
+      {/* Sidebar Footer */}
+      <div className="p-3 border-t border-emerald-500/10 dark:border-emerald-400/10 flex flex-col gap-2 shrink-0 overflow-hidden">
+        <div className="flex flex-col lg:flex-row gap-1">
           <button
-            onClick={handleLogout}
-            className="w-full flex items-center justify-center gap-2 p-3 bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:text-red-400 dark:hover:bg-red-500/80 dark:hover:text-white rounded-xl transition-all font-bold text-sm border border-red-500/20"
+            onClick={() => setTheme(isDark ? 'light' : 'dark')}
+            className="flex-1 p-2 bg-emerald-500/5 hover:bg-emerald-500/10 dark:bg-black/30 dark:hover:bg-white/5 border border-emerald-500/10 dark:border-white/5 text-emerald-800 dark:text-emerald-300 hover:text-emerald-950 dark:hover:text-white rounded-lg transition-all flex items-center justify-center gap-1.5 font-bold text-[10px]"
+            title={isDark ? 'Switch to Light' : 'Switch to Dark'}
           >
-            <LogOut className="w-4 h-4 animate-pulse" />
-            <span>{t('logout')}</span>
+            {isDark ? <Sun className="w-3.5 h-3.5 text-amber-500" /> : <Moon className="w-3.5 h-3.5 text-violet-600" />}
+            <span className="lg:inline group-hover:inline hidden">{isDark ? (isAr ? 'فاتح' : 'Light') : (isAr ? 'داكن' : 'Dark')}</span>
+          </button>
+          <button
+            onClick={() => setLang(lang === 'ar' ? 'en' : 'ar')}
+            className="flex-1 p-2 bg-emerald-500/5 hover:bg-emerald-500/10 dark:bg-black/30 dark:hover:bg-white/5 border border-emerald-500/10 dark:border-white/5 text-emerald-800 dark:text-emerald-300 hover:text-emerald-950 dark:hover:text-white rounded-lg transition-all flex items-center justify-center gap-1.5 font-bold text-[10px]"
+          >
+            <Globe className="w-3.5 h-3.5" />
+            <span className="lg:inline group-hover:inline hidden">{lang === 'ar' ? 'English' : 'عربي'}</span>
           </button>
         </div>
-      </aside>
-    </>
+
+        <button
+          onClick={handleLogout}
+          className="w-full flex items-center justify-center lg:justify-start group-hover:justify-start gap-2 p-2.5 bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:text-red-400 dark:hover:bg-red-500 dark:hover:text-white rounded-lg transition-all font-bold text-xs border border-red-500/20"
+        >
+          <LogOut className="w-3.5 h-3.5" />
+          <span className="lg:inline group-hover:inline hidden whitespace-nowrap">{t('logout')}</span>
+        </button>
+      </div>
+    </aside>
   );
 }
 
@@ -225,15 +206,18 @@ function TopNav() {
   const pageTitle = currentItem ? (isAr ? currentItem.labelAr : currentItem.label) : '';
 
   return (
-    <header className="bg-white/70 dark:bg-black/40 backdrop-blur-2xl border-b border-emerald-500/10 dark:border-emerald-400/10 px-4 md:px-6 h-16 flex items-center justify-between shrink-0 z-40 transition-colors duration-300">
+    <header className="bg-white/70 dark:bg-[#07130f]/60 backdrop-blur-2xl border-b border-emerald-500/10 dark:border-emerald-400/10 px-4 md:px-6 h-16 flex items-center justify-between shrink-0 z-40 transition-colors duration-300">
       <div className="flex items-center gap-3">
         <button
-          onClick={() => setIsMenuOpen(!isMenuOpen)}
+          onClick={() => setIsMenuOpen(true)}
           className="p-2 text-emerald-800 dark:text-slate-300 hover:text-emerald-950 dark:hover:text-white md:hidden"
         >
           <Menu className="w-6 h-6" />
         </button>
-        <h3 className="font-black text-emerald-900 dark:text-white text-lg tracking-tight">
+        <h3 className="font-black text-emerald-900 dark:text-white text-lg tracking-tight md:hidden">
+          {t('appTitle')}
+        </h3>
+        <h3 className="font-black text-emerald-900 dark:text-white text-xl tracking-tight hidden md:block">
           {pageTitle}
         </h3>
       </div>
@@ -280,7 +264,7 @@ function RoleView() {
 
 // ─── Inner App ────────────────────────────────────────────────────────────────
 function InnerApp() {
-  const { isLoggedIn, setActivePage } = useClinic();
+  const { isLoggedIn, setActivePage, isMenuOpen, setIsMenuOpen } = useClinic();
 
   if (!isLoggedIn) {
     return (
@@ -292,15 +276,28 @@ function InnerApp() {
   }
 
   return (
-    <div className="min-h-screen md:h-screen w-screen flex flex-col md:flex-row overflow-y-auto md:overflow-hidden relative">
+    <div className="min-h-screen md:h-screen w-screen flex flex-col md:flex-row overflow-y-auto md:overflow-hidden relative pb-16 md:pb-0">
       <Background />
+      {/* Collapsible Sidebar (Tablet/Desktop) */}
       <Sidebar onOpenSettings={() => setActivePage('account')} />
+      
+      {/* Mobile personal overlay drawer */}
+      <MobileDrawer 
+        isOpen={isMenuOpen} 
+        onClose={() => setIsMenuOpen(false)} 
+        onOpenSettings={() => setActivePage('account')} 
+      />
+
       <div className="flex-1 flex flex-col min-h-0 overflow-visible md:overflow-hidden">
         <TopNav />
         <main className="flex-1 overflow-visible md:overflow-y-auto p-3 md:p-4 min-h-0">
           <RoleView />
         </main>
       </div>
+
+      {/* Mobile bottom tab navigation */}
+      <BottomTabBar onMoreClick={() => setIsMenuOpen(true)} />
+
       <ToastContainer />
     </div>
   );

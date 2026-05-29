@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Activity, User, Lock, Globe } from 'lucide-react';
+import { Activity, User, Lock, Globe, ChevronDown } from 'lucide-react';
 import { useClinic } from '../contexts/ClinicContext';
 import { SPECIALTIES } from '../constants';
 import { Card, Input, s } from '../components/shared';
@@ -120,32 +120,42 @@ export default function AuthView() {
 
           <div className="flex flex-col gap-2">
             <label className="text-sm font-bold text-slate-600 dark:text-slate-300 px-1">{t('selectRole')}</label>
-            <select
-              className={`${s.input} appearance-none cursor-pointer`}
-              value={selectedRole}
-              onChange={e => setSelectedRole(e.target.value)}
-              dir={isAr ? 'rtl' : 'ltr'}
-            >
-              {['patient','doctor','receptionist','pharmacy','radiology','manager']
-                .concat(isLogin ? ['admin'] : [])
-                .map(r => (
-                  <option key={r} value={r}>{t(r)}</option>
-                ))}
-            </select>
+            <div className="relative w-full">
+              <select
+                className={`${s.input} w-full appearance-none cursor-pointer pe-10 ps-4`}
+                value={selectedRole}
+                onChange={e => setSelectedRole(e.target.value)}
+                dir={isAr ? 'rtl' : 'ltr'}
+              >
+                {['patient','doctor','receptionist','pharmacy','radiology','manager']
+                  .concat(isLogin ? ['admin'] : [])
+                  .map(r => (
+                    <option key={r} value={r}>{t(r)}</option>
+                  ))}
+              </select>
+              <div className="absolute inset-y-0 end-0 flex items-center pe-4 pointer-events-none">
+                <ChevronDown className="w-5 h-5 text-emerald-500/80" />
+              </div>
+            </div>
           </div>
           {selectedRole === 'doctor' && (
             <div className="flex flex-col gap-2 animate-in fade-in">
               <label className="text-sm font-bold text-slate-600 dark:text-slate-300 px-1">{t('selectSpecialty')}</label>
-              <select
-                className={`${s.input} appearance-none cursor-pointer`}
-                value={selectedSpec}
-                onChange={e => setSelectedSpec(e.target.value)}
-                dir={isAr ? 'rtl' : 'ltr'}
-              >
-                {SPECIALTIES.map(sp => (
-                  <option key={sp.id} value={sp.id}>{isAr ? sp.ar : sp.en}</option>
-                ))}
-              </select>
+              <div className="relative w-full">
+                <select
+                  className={`${s.input} w-full appearance-none cursor-pointer pe-10 ps-4`}
+                  value={selectedSpec}
+                  onChange={e => setSelectedSpec(e.target.value)}
+                  dir={isAr ? 'rtl' : 'ltr'}
+                >
+                  {SPECIALTIES.map(sp => (
+                    <option key={sp.id} value={sp.id}>{isAr ? sp.ar : sp.en}</option>
+                  ))}
+                </select>
+                <div className="absolute inset-y-0 end-0 flex items-center pe-4 pointer-events-none">
+                  <ChevronDown className="w-5 h-5 text-emerald-500/80" />
+                </div>
+              </div>
             </div>
           )}
           {isLogin && selectedRole !== 'admin' && (
@@ -153,18 +163,23 @@ export default function AuthView() {
               <label className="text-sm font-bold text-slate-600 dark:text-slate-300 px-1">
                 {isAr ? 'اختر الجهة / العيادة' : 'Select Clinic / Pharmacy / Lab'}
               </label>
-              <select
-                className={`${s.input} appearance-none cursor-pointer`}
-                value={selectedOrgId}
-                onChange={e => setSelectedOrgId(e.target.value)}
-                dir={isAr ? 'rtl' : 'ltr'}
-              >
-                {organizationOptions.map(org => (
-                  <option key={org.id} value={org.id}>
-                    {isAr ? org.nameAr : org.name}
-                  </option>
-                ))}
-              </select>
+              <div className="relative w-full">
+                <select
+                  className={`${s.input} w-full appearance-none cursor-pointer pe-10 ps-4`}
+                  value={selectedOrgId}
+                  onChange={e => setSelectedOrgId(e.target.value)}
+                  dir={isAr ? 'rtl' : 'ltr'}
+                >
+                  {organizationOptions.map(org => (
+                    <option key={org.id} value={org.id}>
+                      {isAr ? org.nameAr : org.name}
+                    </option>
+                  ))}
+                </select>
+                <div className="absolute inset-y-0 end-0 flex items-center pe-4 pointer-events-none">
+                  <ChevronDown className="w-5 h-5 text-emerald-500/80" />
+                </div>
+              </div>
             </div>
           )}
         </div>

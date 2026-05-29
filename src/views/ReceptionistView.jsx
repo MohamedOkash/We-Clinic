@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Search, Plus, Calendar, Bell, FileText, CheckCircle, Printer } from 'lucide-react';
+import { Search, Plus, Calendar, Bell, FileText, CheckCircle, Printer, ChevronDown } from 'lucide-react';
 import { useClinic } from '../contexts/ClinicContext';
 import { Card, InnerCard, Avatar, Input, s, printReceipt } from '../components/shared';
 import { useToast } from '../hooks/useToast';
@@ -184,15 +184,20 @@ export default function ReceptionistView() {
                 <Card className="p-4">
                   <h4 className="text-lg font-bold text-white mb-3">{isAr ? 'حجز موعد جديد' : 'Book Appointment'}</h4>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <select value={apptForm.patientId || ''} onChange={e => setApptForm(f => ({ ...f, patientId: Number(e.target.value) }))} className={`${s.inputSm} appearance-none cursor-pointer bg-slate-50 dark:bg-slate-900`}>
-                      <option value="">{isAr ? 'اختر مريضاً' : 'Select patient'}</option>
-                      {patients.map(p => (
-                        <option key={p.id} value={p.id}>{isAr ? p.nameAr : p.name} • {p.phone}</option>
-                      ))}
-                    </select>
-                    <input type="text" className={`${s.inputSm} bg-slate-50 dark:bg-slate-900`} placeholder={isAr ? 'الطبيب' : 'Doctor'} value={apptForm.doctor} onChange={e => setApptForm(f => ({ ...f, doctor: e.target.value }))} />
-                    <input type="date" className={`${s.inputSm} bg-slate-50 dark:bg-slate-900`} value={apptForm.date} onChange={e => setApptForm(f => ({ ...f, date: e.target.value }))} />
-                    <input type="time" className={`${s.inputSm} bg-slate-50 dark:bg-slate-900`} value={apptForm.time} onChange={e => setApptForm(f => ({ ...f, time: e.target.value }))} />
+                    <div className="relative w-full">
+                      <select value={apptForm.patientId || ''} onChange={e => setApptForm(f => ({ ...f, patientId: Number(e.target.value) }))} className={`${s.inputSm} w-full appearance-none cursor-pointer pe-10 ps-3`}>
+                        <option value="">{isAr ? 'اختر مريضاً' : 'Select patient'}</option>
+                        {patients.map(p => (
+                          <option key={p.id} value={p.id}>{isAr ? p.nameAr : p.name} • {p.phone}</option>
+                        ))}
+                      </select>
+                      <div className="absolute inset-y-0 end-0 flex items-center pe-3 pointer-events-none">
+                        <ChevronDown className="w-4 h-4 text-emerald-500/80" />
+                      </div>
+                    </div>
+                    <input type="text" className={s.inputSm} placeholder={isAr ? 'الطبيب' : 'Doctor'} value={apptForm.doctor} onChange={e => setApptForm(f => ({ ...f, doctor: e.target.value }))} />
+                    <input type="date" className={s.inputSm} value={apptForm.date} onChange={e => setApptForm(f => ({ ...f, date: e.target.value }))} />
+                    <input type="time" className={s.inputSm} value={apptForm.time} onChange={e => setApptForm(f => ({ ...f, time: e.target.value }))} />
                   </div>
                   <div className="mt-3 flex gap-2">
                     <button onClick={() => {

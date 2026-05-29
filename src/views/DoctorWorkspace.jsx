@@ -942,24 +942,29 @@ Are there any serious interactions or warnings? Be concise and clear.`;
                     )}
                   </div>
                   <div className="flex gap-2">
-                    <select
-                      value={chronicDiseaseSearch}
-                      onChange={e => {
-                        const code = e.target.value;
-                        if (!code) return;
-                        const icd = ICD_10.find(i => i.code === code);
-                        if (icd) {
-                          addPatientChronicDisease(activePatient.id, icd);
-                        }
-                        setChronicDiseaseSearch('');
-                      }}
-                      className={`${s.inputSm} bg-slate-900 border-white/10`}
-                    >
-                      <option value="">{isAr ? 'إضافة مرض مزمن من ICD-10...' : 'Add chronic disease from ICD-10...'}</option>
-                      {activeSpecialtyDiags.map(d => (
-                        <option key={d.code} value={d.code}>{d.code}: {isAr ? d.ar : d.en}</option>
-                      ))}
-                    </select>
+                    <div className="relative w-full">
+                      <select
+                        value={chronicDiseaseSearch}
+                        onChange={e => {
+                          const code = e.target.value;
+                          if (!code) return;
+                          const icd = ICD_10.find(i => i.code === code);
+                          if (icd) {
+                            addPatientChronicDisease(activePatient.id, icd);
+                          }
+                          setChronicDiseaseSearch('');
+                        }}
+                        className={`${s.inputSm} w-full appearance-none cursor-pointer pe-10 ps-3`}
+                      >
+                        <option value="">{isAr ? 'إضافة مرض مزمن من ICD-10...' : 'Add chronic disease from ICD-10...'}</option>
+                        {activeSpecialtyDiags.map(d => (
+                          <option key={d.code} value={d.code}>{d.code}: {isAr ? d.ar : d.en}</option>
+                        ))}
+                      </select>
+                      <div className="absolute inset-y-0 end-0 flex items-center pe-3 pointer-events-none">
+                        <ChevronDown className="w-4 h-4 text-emerald-500/80" />
+                      </div>
+                    </div>
                   </div>
                 </div>
 
@@ -998,15 +1003,20 @@ Are there any serious interactions or warnings? Be concise and clear.`;
                       onChange={e => setAllergyInput(e.target.value)}
                       className={`${s.inputSm} bg-slate-900`}
                     />
-                    <select
-                      value={allergySeverity}
-                      onChange={e => setAllergySeverity(e.target.value)}
-                      className={`${s.inputSm} w-32 bg-slate-900`}
-                    >
-                      <option value="Mild">{isAr ? 'خفيفة' : 'Mild'}</option>
-                      <option value="Moderate">{isAr ? 'متوسطة' : 'Moderate'}</option>
-                      <option value="Severe">{isAr ? 'شديدة' : 'Severe'}</option>
-                    </select>
+                    <div className="relative w-32 shrink-0">
+                      <select
+                        value={allergySeverity}
+                        onChange={e => setAllergySeverity(e.target.value)}
+                        className={`${s.inputSm} w-full appearance-none cursor-pointer pe-10 ps-3`}
+                      >
+                        <option value="Mild">{isAr ? 'خفيفة' : 'Mild'}</option>
+                        <option value="Moderate">{isAr ? 'متوسطة' : 'Moderate'}</option>
+                        <option value="Severe">{isAr ? 'شديدة' : 'Severe'}</option>
+                      </select>
+                      <div className="absolute inset-y-0 end-0 flex items-center pe-3 pointer-events-none">
+                        <ChevronDown className="w-4 h-4 text-emerald-500/80" />
+                      </div>
+                    </div>
                     <button
                       onClick={() => {
                         if (!allergyInput.trim()) return;
@@ -1149,37 +1159,47 @@ Are there any serious interactions or warnings? Be concise and clear.`;
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="flex flex-col gap-1.5">
                         <label className="text-xs font-bold text-slate-400">{isAr ? 'نوع الجهة المستهدفة:' : 'Target Entity Type:'}</label>
-                        <select
-                          value={referralTargetType}
-                          onChange={e => {
-                            setReferralTargetType(e.target.value);
-                            setReferralTargetOrgId('');
-                          }}
-                          className={`${s.inputSm} bg-slate-900 border-white/10`}
-                        >
-                          <option value="clinic">{isAr ? 'عيادة طبيب زميل' : 'Fellow Doctor Clinic'}</option>
-                          <option value="lab">{isAr ? 'معمل تحاليل' : 'Medical Laboratory'}</option>
-                          <option value="radiology">{isAr ? 'مركز أشعة' : 'Radiology Center'}</option>
-                        </select>
+                        <div className="relative w-full">
+                          <select
+                            value={referralTargetType}
+                            onChange={e => {
+                              setReferralTargetType(e.target.value);
+                              setReferralTargetOrgId('');
+                            }}
+                            className={`${s.inputSm} w-full appearance-none cursor-pointer pe-10 ps-3`}
+                          >
+                            <option value="clinic">{isAr ? 'عيادة طبيب زميل' : 'Fellow Doctor Clinic'}</option>
+                            <option value="lab">{isAr ? 'معمل تحاليل' : 'Medical Laboratory'}</option>
+                            <option value="radiology">{isAr ? 'مركز أشعة' : 'Radiology Center'}</option>
+                          </select>
+                          <div className="absolute inset-y-0 end-0 flex items-center pe-3 pointer-events-none">
+                            <ChevronDown className="w-4 h-4 text-emerald-500/80" />
+                          </div>
+                        </div>
                       </div>
 
                       <div className="flex flex-col gap-1.5">
                         <label className="text-xs font-bold text-slate-400">{isAr ? 'اختر الجهة المحددة:' : 'Select Target Destination:'}</label>
-                        <select
-                          value={referralTargetOrgId}
-                          onChange={e => setReferralTargetOrgId(e.target.value)}
-                          className={`${s.inputSm} bg-slate-900 border-white/10`}
-                          required
-                        >
-                          <option value="">{isAr ? 'اختر جهة التحويل...' : 'Select destination...'}</option>
-                          {referTargets
-                            .filter(org => org.type === referralTargetType)
-                            .map(org => (
-                              <option key={org.id} value={org.id}>
-                                {isAr ? org.nameAr : org.name} ({isAr ? org.cityAr : org.city})
-                              </option>
-                            ))}
-                        </select>
+                        <div className="relative w-full">
+                          <select
+                            value={referralTargetOrgId}
+                            onChange={e => setReferralTargetOrgId(e.target.value)}
+                            className={`${s.inputSm} w-full appearance-none cursor-pointer pe-10 ps-3`}
+                            required
+                          >
+                            <option value="">{isAr ? 'اختر جهة التحويل...' : 'Select destination...'}</option>
+                            {referTargets
+                              .filter(org => org.type === referralTargetType)
+                              .map(org => (
+                                <option key={org.id} value={org.id}>
+                                  {isAr ? org.nameAr : org.name} ({isAr ? org.cityAr : org.city})
+                                </option>
+                              ))}
+                          </select>
+                          <div className="absolute inset-y-0 end-0 flex items-center pe-3 pointer-events-none">
+                            <ChevronDown className="w-4 h-4 text-emerald-500/80" />
+                          </div>
+                        </div>
                       </div>
                     </div>
 
@@ -1454,16 +1474,21 @@ Are there any serious interactions or warnings? Be concise and clear.`;
           </p>
           <div className="flex flex-col gap-1">
             <label className="text-xs font-bold text-slate-400">{isAr ? 'اختر العيادة المستهدفة / الطبيب' : 'Select Target Clinic / Doctor'}</label>
-            <select
-              value={reqTargetOrgId}
-              onChange={e => setReqTargetOrgId(e.target.value)}
-              className={`${s.input} appearance-none cursor-pointer bg-slate-900`}
-            >
-              <option value="">{isAr ? 'اختر العيادة...' : 'Select clinic...'}</option>
-              {otherClinics.map(org => (
-                <option key={org.id} value={org.id}>{isAr ? org.nameAr : org.name}</option>
-              ))}
-            </select>
+            <div className="relative w-full">
+              <select
+                value={reqTargetOrgId}
+                onChange={e => setReqTargetOrgId(e.target.value)}
+                className={`${s.input} w-full appearance-none cursor-pointer pe-10 ps-4`}
+              >
+                <option value="">{isAr ? 'اختر العيادة...' : 'Select clinic...'}</option>
+                {otherClinics.map(org => (
+                  <option key={org.id} value={org.id}>{isAr ? org.nameAr : org.name}</option>
+                ))}
+              </select>
+              <div className="absolute inset-y-0 end-0 flex items-center pe-4 pointer-events-none">
+                <ChevronDown className="w-5 h-5 text-emerald-500/80" />
+              </div>
+            </div>
           </div>
           <Input
             label={isAr ? 'رقم هاتف المريض' : 'Patient Phone Number'}
