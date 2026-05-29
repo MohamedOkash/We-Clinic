@@ -3,9 +3,11 @@ import {
   Users, Search, Activity, Sparkles, Stethoscope,
   History, MessageSquare, Package, Pill, Plus, X,
   HeartPulse, Thermometer, Heart, Droplet, FolderOpen,
-  FileImage, BrainCircuit, Printer, AlertCircle, BarChart3, FileText,
+  FileImage, BrainCircuit, Printer, AlertCircle, BarChart3, FileText, Settings,
+  ChevronDown
 } from 'lucide-react';
 import { useClinic } from '../contexts/ClinicContext';
+import AccountSettingsView from './AccountSettingsView';
 import { SPECIALTIES, SPECIALTY_DRUGS, ICD_10, callGemini } from '../constants';
 import { Card, InnerCard, Avatar, Input, GlassModal, s, printPrescription, printReferralLetter } from '../components/shared';
 import { useToast } from '../hooks/useToast';
@@ -19,6 +21,7 @@ import GeneralModule from '../modules/GeneralModule';
 import DermatologyModule from '../modules/DermatologyModule';
 import InternalMedicineModule from '../modules/InternalMedicineModule';
 import NeurologyModule from '../modules/NeurologyModule';
+import PhysicalTherapyModule from '../modules/PhysicalTherapyModule';
 
 function getSpecName(specialty, isAr) {
   const sp = SPECIALTIES.find(s => s.id === specialty);
@@ -159,6 +162,7 @@ export default function DoctorWorkspace() {
   const [aiPrompt, setAiPrompt]             = useState('');
   const [aiResponse, setAiResponse]         = useState('');
   const [isAiLoading, setIsAiLoading]       = useState(false);
+  const [aiError, setAiError]               = useState('');
   const [interactionResult, setInteractionResult] = useState('');
   const [isInteractionLoading, setIsInteractionLoading] = useState(false);
   const [rx, setRx]                         = useState([]);
@@ -412,6 +416,7 @@ export default function DoctorWorkspace() {
     if (!aiPrompt.trim()) return;
     setIsAiLoading(true);
     setAiResponse('');
+    setAiError('');
     try {
       const diagsList = selectedDiags.map(d => `${d.code}: ${isAr ? d.ar : d.en}`).join(', ') || 'Not specified';
       const vitalsStr = `BP: ${vitals.bp}, HR: ${vitals.hr}, Temp: ${vitals.temp}, SpO2: ${vitals.spo2}`;
@@ -443,6 +448,8 @@ Keep it structured and brief.`;
       const result = await callGemini(prompt, isAr ? 'ar' : 'en');
       setAiResponse(result);
     } catch (err) {
+      console.error(err);
+      setAiError(err.message || (isAr ? 'فشل الاتصال بخادم الذكاء الاصطناعي' : 'Failed to connect to the AI server'));
       toast.error(isAr ? 'خطأ في الاتصال بـ AI' : 'AI connection error');
     } finally {
       setIsAiLoading(false);
@@ -541,7 +548,7 @@ Are there any serious interactions or warnings? Be concise and clear.`;
   );
 
   return (
-    <div className="h-full flex flex-col gap-4 overflow-hidden animate-in fade-in duration-500">
+    <div className="min-h-full md:h-full flex flex-col gap-4 overflow-visible md:overflow-hidden animate-in fade-in duration-500">
 
       {/* Tab bar */}
       <Card className="!p-3 flex flex-col md:flex-row justify-between items-center shrink-0 gap-4">
@@ -562,6 +569,7 @@ Are there any serious interactions or warnings? Be concise and clear.`;
           {tabBtn('aiPrescription', Sparkles,      t('aiPrescription'),
             'bg-gradient-to-br from-violet-700 to-fuchsia-800 text-white border border-fuchsia-500/50'
           )}
+          {tabBtn('account',        Settings,      isAr ? 'إعدادات الحساب' : 'Account Settings')}
         </div>
       </Card>
 
@@ -577,11 +585,11 @@ Are there any serious interactions or warnings? Be concise and clear.`;
       )}
 
       {/* View container */}
-      <div className="flex-1 overflow-hidden flex flex-col min-h-0">
+      <div className="flex-1 overflow-visible md:overflow-hidden flex flex-col min-h-0">
 
         {/* ── Registry ── */}
         {tab === 'registry' && (
-          <Card className="h-full flex flex-col animate-in slide-in-from-bottom-4">
+          <Card className="min-h-full md:h-full flex flex-col animate-in slide-in-from-bottom-4">
             <div className="shrink-0 mb-4 flex flex-col md:flex-row justify-between items-center gap-4">
               <h2 className="text-2xl font-black text-white">{t('patientsRegistry')}</h2>
               <div className="flex flex-wrap gap-2 w-full md:w-auto items-center justify-end">
@@ -646,7 +654,7 @@ Are there any serious interactions or warnings? Be concise and clear.`;
               </div>
             )}
 
-            <div className="flex flex-col gap-3 overflow-y-auto flex-1 pe-2">
+            <div className="flex flex-col gap-3 overflow-visible md:overflow-y-auto flex-1 pe-2">
               {filteredPatients.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-12 px-6 text-center animate-in bg-black/20 rounded-2xl border border-white/5 flex-1">
                   <div className="w-16 h-16 rounded-2xl bg-slate-900/80 border border-white/[0.06] flex items-center justify-center mb-4">
@@ -695,8 +703,8 @@ Are there any serious interactions or warnings? Be concise and clear.`;
 
         {/* ── History ── */}
         {tab === 'history' && (
-          <div className="flex flex-col md:flex-row gap-4 h-full min-h-0 animate-in slide-in-from-bottom-4">
-            <div className="w-full md:w-1/3 flex flex-col gap-4 overflow-y-auto shrink-0 min-h-0">
+          <div className="flex flex-col md:flex-row gap-4 min-h-full md:h-full min-h-0 animate-in slide-in-from-bottom-4">
+            <div className="w-full md:w-1/3 flex flex-col gap-4 overflow-visible md:overflow-y-auto shrink-0 min-h-0">
               <InnerCard>
                 <h3 className="font-black text-white flex items-center gap-2 mb-3">
                   <Activity className="w-5 h-5 text-red-400" /> {t('chronicDiseases')}
@@ -713,7 +721,7 @@ Are there any serious interactions or warnings? Be concise and clear.`;
                 <span className={`${s.badge} !bg-orange-900/30 !text-orange-300 !border-orange-500/30`}>Penicillin</span>
               </InnerCard>
             </div>
-            <Card className="flex-1 flex flex-col overflow-y-auto min-h-0">
+            <Card className="flex-1 flex flex-col overflow-visible md:overflow-y-auto min-h-0">
               <h3 className="font-black text-2xl text-white mb-6 shrink-0">{t('pastVisits')}</h3>
               <div className="relative flex gap-6 pb-6">
                 <div className="w-16 h-16 rounded-full bg-slate-900 border-2 border-cyan-400 flex flex-col items-center justify-center shrink-0 z-10 shadow-[0_0_15px_rgba(34,211,238,0.5)]">
@@ -733,14 +741,14 @@ Are there any serious interactions or warnings? Be concise and clear.`;
 
         {/* ── Patient Medical History ── */}
         {tab === 'patientHistory' && activePatient && (
-          <Card className="flex-1 flex flex-col overflow-y-auto min-h-0 pe-1 animate-in slide-in-from-bottom-4">
+          <Card className="flex-1 flex flex-col overflow-visible md:overflow-y-auto min-h-0 pe-1 animate-in slide-in-from-bottom-4">
             <MedicalRecordViewer patientId={activePatient.id} />
           </Card>
         )}
 
         {/* ── Lab Orders ── */}
         {tab === 'labOrders' && (
-          <Card className="flex-1 flex flex-col gap-6 overflow-y-auto min-h-0 pe-1 animate-in slide-in-from-bottom-4">
+          <Card className="flex-1 flex flex-col gap-6 overflow-visible md:overflow-y-auto min-h-0 pe-1 animate-in slide-in-from-bottom-4">
             {!activePatient ? (
               <div className="flex flex-col items-center justify-center py-12 px-6 text-center animate-in bg-black/20 rounded-2xl border border-white/5 flex-1">
                 <div className="w-16 h-16 rounded-2xl bg-slate-900/80 border border-white/[0.06] flex items-center justify-center mb-4">
@@ -778,7 +786,7 @@ Are there any serious interactions or warnings? Be concise and clear.`;
 
         {/* ── Examination ── */}
         {tab === 'examination' && (
-          <Card className="flex-1 flex flex-col overflow-y-auto gap-6 min-h-0 pe-1 animate-in slide-in-from-bottom-4">
+          <Card className="flex-1 flex flex-col overflow-visible md:overflow-y-auto gap-6 min-h-0 pe-1 animate-in slide-in-from-bottom-4">
             {/* Vitals */}
             <InnerCard className="shrink-0">
               <h3 className="font-black text-white flex items-center gap-3 text-xl mb-5">
@@ -1025,6 +1033,7 @@ Are there any serious interactions or warnings? Be concise and clear.`;
             {specialty === 'dermatology'       && <DermatologyModule t={t} />}
             {specialty === 'internal_medicine' && <InternalMedicineModule t={t} />}
             {specialty === 'neurology'         && <NeurologyModule t={t} />}
+            {specialty === 'physical_therapy'  && <PhysicalTherapyModule t={t} />}
 
             {/* Past scans */}
             <InnerCard className="shrink-0">
@@ -1204,10 +1213,10 @@ Are there any serious interactions or warnings? Be concise and clear.`;
 
         {/* ── AI & Prescription ── */}
         {tab === 'aiPrescription' && (
-          <div className="flex flex-col lg:flex-row gap-4 h-full min-h-0 animate-in slide-in-from-bottom-4">
+          <div className="flex flex-col lg:flex-row gap-4 min-h-full md:h-full min-h-0 animate-in slide-in-from-bottom-4">
 
             {/* Left: inquiries + AI */}
-            <div className="flex-1 flex flex-col gap-4 overflow-y-auto min-h-0">
+            <div className="flex-1 flex flex-col gap-4 overflow-visible md:overflow-y-auto min-h-0">
 
               {/* Pharmacy inquiries */}
               <Card className="!p-5 border-cyan-500/30 shrink-0">
@@ -1270,18 +1279,33 @@ Are there any serious interactions or warnings? Be concise and clear.`;
                     <p className="text-white font-bold leading-relaxed whitespace-pre-line text-sm">{aiResponse}</p>
                   </div>
                 )}
+                {aiError && (
+                  <div className="p-4 bg-red-950/20 border border-red-500/30 rounded-2xl animate-in zoom-in-95 flex flex-col gap-2">
+                    <div className="flex items-center gap-2 text-red-400 font-bold text-sm">
+                      <AlertCircle className="w-5 h-5 shrink-0" />
+                      <span>{isAr ? 'خطأ في الاتصال بمساعد الذكاء الاصطناعي' : 'AI Assistant Connection Error'}</span>
+                    </div>
+                    <p className="text-xs text-red-300 font-medium leading-relaxed">{aiError}</p>
+                    <button
+                      onClick={handleAIGenerate}
+                      className="mt-1 text-xs font-bold text-cyan-400 hover:text-cyan-300 flex items-center gap-1 self-start transition-colors"
+                    >
+                      <span>{isAr ? 'إعادة المحاولة' : 'Try Again'}</span>
+                    </button>
+                  </div>
+                )}
               </Card>
             </div>
 
             {/* Right: drug library + prescription */}
-            <div className="w-full lg:w-[45%] flex flex-col gap-4 h-full min-h-0">
+            <div className="w-full lg:w-[45%] flex flex-col gap-4 min-h-full md:h-full min-h-0">
 
               {/* Drug library */}
-              <InnerCard className="flex-1 flex flex-col min-h-[220px] overflow-hidden">
+              <InnerCard className="flex-1 flex flex-col min-h-[220px] overflow-visible md:overflow-hidden">
                 <h3 className="font-black text-white mb-3 flex items-center gap-2 text-lg">
                   <Package className="w-5 h-5 text-cyan-400" /> {t('specialtyDrugs')}
                 </h3>
-                <div className="flex-1 overflow-y-auto flex flex-col gap-2 pe-1">
+                <div className="flex-1 overflow-visible md:overflow-y-auto flex flex-col gap-2 pe-1">
                   {currentDrugs.map((drug, idx) => (
                     <div key={idx} className="bg-black/50 border border-white/5 p-3 rounded-xl flex justify-between items-center hover:bg-black/70 transition-colors">
                       <div className="flex-1 min-w-0 pe-3">
@@ -1308,7 +1332,7 @@ Are there any serious interactions or warnings? Be concise and clear.`;
                   <span className={`${s.badge} !bg-emerald-500/20 !text-emerald-300 !border-emerald-500/50`}>{rx.length}</span>
                 </div>
 
-                <div className="flex-1 overflow-y-auto flex flex-col gap-3 pe-1">
+                <div className="flex-1 overflow-visible md:overflow-y-auto flex flex-col gap-3 pe-1">
                   {rx.length === 0 ? (
                     <div className="h-full flex items-center justify-center text-slate-500 font-bold text-center text-sm">
                       {isAr ? 'لم تُضف أدوية بعد' : 'No drugs added yet'}
@@ -1411,6 +1435,13 @@ Are there any serious interactions or warnings? Be concise and clear.`;
             </div>
           </div>
         )}
+
+        {/* ── Account Settings ── */}
+        {tab === 'account' && (
+          <div className="flex-1 overflow-y-auto min-h-0 animate-in slide-in-from-bottom-4">
+            <AccountSettingsView />
+          </div>
+        )}
       </div>
 
       {/* Request Patient Record Modal */}
@@ -1463,16 +1494,21 @@ Are there any serious interactions or warnings? Be concise and clear.`;
         title={isAr ? 'تسجيل مريض جديد بالكامل' : 'Register New Patient'}
         onClose={() => setIsAddPatientOpen(false)}
       >
-        <div className="p-6 flex flex-col gap-5">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Input
-              label={isAr ? 'الاسم الرباعي الكامل' : 'Full Name'}
-              placeholder={isAr ? 'أدخل الاسم الكامل للمريض...' : 'Enter patient name...'}
-              value={newPatientForm.fullName}
-              onChange={e => setNewPatientForm(prev => ({ ...prev, fullName: e.target.value }))}
-              error={newPatientErrors.fullName}
-              required
-            />
+        <div className="flex flex-col gap-5">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 w-full">
+            {/* Full Name */}
+            <div className="md:col-span-2">
+              <Input
+                label={isAr ? 'الاسم الرباعي الكامل' : 'Full Name'}
+                placeholder={isAr ? 'أدخل الاسم الكامل للمريض...' : 'Enter patient name...'}
+                value={newPatientForm.fullName}
+                onChange={e => setNewPatientForm(prev => ({ ...prev, fullName: e.target.value }))}
+                error={newPatientErrors.fullName}
+                required
+              />
+            </div>
+            
+            {/* Phone Number */}
             <Input
               label={isAr ? 'رقم الهاتف' : 'Phone Number'}
               placeholder="01xxxxxxxxx"
@@ -1482,79 +1518,90 @@ Are there any serious interactions or warnings? Be concise and clear.`;
               required
             />
 
+            {/* Date of Birth */}
             <Input
               label={isAr ? 'تاريخ الميلاد' : 'Date of Birth'}
               type="date"
               value={newPatientForm.dob}
               onChange={e => setNewPatientForm(prev => ({ ...prev, dob: e.target.value }))}
             />
-          </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="flex flex-col gap-1.5">
+            {/* Gender */}
+            <div className="flex flex-col gap-1.5 relative">
               <label className={s.label}>{isAr ? 'الجنس' : 'Gender'}</label>
-              <select
-                value={newPatientForm.gender}
-                onChange={e => setNewPatientForm(prev => ({ ...prev, gender: e.target.value }))}
-                className={`${s.input} appearance-none cursor-pointer bg-slate-900`}
-              >
-                <option value="male">{isAr ? 'ذكر' : 'Male'}</option>
-                <option value="female">{isAr ? 'أنثى' : 'Female'}</option>
-              </select>
+              <div className="relative w-full">
+                <select
+                  value={newPatientForm.gender}
+                  onChange={e => setNewPatientForm(prev => ({ ...prev, gender: e.target.value }))}
+                  className={`${s.input} appearance-none cursor-pointer pe-10 ps-4`}
+                >
+                  <option value="male">{isAr ? 'ذكر' : 'Male'}</option>
+                  <option value="female">{isAr ? 'أنثى' : 'Female'}</option>
+                </select>
+                <div className="absolute inset-y-0 end-0 flex items-center pe-4 pointer-events-none">
+                  <ChevronDown className="w-5 h-5 text-emerald-500/80" />
+                </div>
+              </div>
             </div>
 
+            {/* Known Allergies */}
             <Input
               label={isAr ? 'الحساسية المعروفة (أو اكتب لا يوجد)' : 'Known Allergies'}
               placeholder={isAr ? 'مثل: البنسلين، أسبيرين...' : 'e.g. Penicillin, Aspirin...'}
               value={newPatientForm.allergies}
               onChange={e => setNewPatientForm(prev => ({ ...prev, allergies: e.target.value }))}
             />
-          </div>
 
-          {/* Chronic Diseases Selection */}
-          <div className="flex flex-col gap-1.5">
-            <label className={s.label}>{isAr ? 'الأمراض المزمنة (إن وجدت)' : 'Chronic Diseases (if any)'}</label>
-            <div className="flex flex-wrap gap-1.5 mb-1">
-              {newPatientForm.chronicDiseases.map(code => {
-                const icd = ICD_10.find(i => i.code === code);
-                return (
-                  <span key={code} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-red-500/10 text-red-300 border border-red-500/30 text-xs font-bold">
-                    <span>{code}: {isAr ? icd?.ar : icd?.en}</span>
-                    <button
-                      type="button"
-                      onClick={() => setNewPatientForm(prev => ({
+            {/* Chronic Diseases Selection */}
+            <div className="md:col-span-2 flex flex-col gap-1.5">
+              <label className={s.label}>{isAr ? 'الأمراض المزمنة (إن وجدت)' : 'Chronic Diseases (if any)'}</label>
+              <div className="flex flex-wrap gap-1.5 mb-1.5">
+                {newPatientForm.chronicDiseases.map(code => {
+                  const icd = ICD_10.find(i => i.code === code);
+                  return (
+                    <span key={code} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-red-500/10 text-red-300 border border-red-500/20 text-xs font-bold transition-all duration-200">
+                      <span>{code}: {isAr ? icd?.ar : icd?.en}</span>
+                      <button
+                        type="button"
+                        onClick={() => setNewPatientForm(prev => ({
+                          ...prev,
+                          chronicDiseases: prev.chronicDiseases.filter(c => c !== code)
+                        }))}
+                        className="hover:text-red-400 font-bold ml-1 transition-colors"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    </span>
+                  );
+                })}
+                {newPatientForm.chronicDiseases.length === 0 && (
+                  <span className="text-xs text-slate-500 italic px-1 py-1">{isAr ? 'لا توجد أمراض مزمنة محددة' : 'No chronic diseases selected'}</span>
+                )}
+              </div>
+              <div className="relative w-full">
+                <select
+                  value=""
+                  onChange={e => {
+                    const code = e.target.value;
+                    if (code && !newPatientForm.chronicDiseases.includes(code)) {
+                      setNewPatientForm(prev => ({
                         ...prev,
-                        chronicDiseases: prev.chronicDiseases.filter(c => c !== code)
-                      }))}
-                      className="hover:text-red-400 font-bold ml-1 animate-in zoom-in-95"
-                    >
-                      <X className="w-3 h-3" />
-                    </button>
-                  </span>
-                );
-              })}
-              {newPatientForm.chronicDiseases.length === 0 && (
-                <span className="text-xs text-slate-500 italic">{isAr ? 'لا توجد أمراض مزمنة محددة' : 'No chronic diseases selected'}</span>
-              )}
+                        chronicDiseases: [...prev.chronicDiseases, code]
+                      }));
+                    }
+                  }}
+                  className={`${s.inputSm} appearance-none cursor-pointer pe-10 ps-3`}
+                >
+                  <option value="">{isAr ? 'اختر مرضاً مزمناً لإضافته...' : 'Select chronic disease to add...'}</option>
+                  {activeSpecialtyDiags.map(d => (
+                    <option key={d.code} value={d.code}>{d.code}: {isAr ? d.ar : d.en}</option>
+                  ))}
+                </select>
+                <div className="absolute inset-y-0 end-0 flex items-center pe-3 pointer-events-none">
+                  <ChevronDown className="w-4 h-4 text-emerald-500/80" />
+                </div>
+              </div>
             </div>
-            <select
-              value=""
-              onChange={e => {
-                const code = e.target.value;
-                if (code && !newPatientForm.chronicDiseases.includes(code)) {
-                  setNewPatientForm(prev => ({
-                    ...prev,
-                    chronicDiseases: [...prev.chronicDiseases, code]
-                  }));
-                }
-              }}
-              className={`${s.inputSm} bg-slate-900 border-white/10`}
-            >
-              <option value="">{isAr ? 'اختر مرضاً مزمناً لإضافته...' : 'Select chronic disease to add...'}</option>
-              {activeSpecialtyDiags.map(d => (
-                <option key={d.code} value={d.code}>{d.code}: {isAr ? d.ar : d.en}</option>
-              ))}
-            </select>
           </div>
 
           <div className="flex gap-3 justify-end mt-2">

@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { ScanLine, UploadCloud, CheckCircle, Search, AlertCircle, FileText, Printer } from 'lucide-react';
+import { ScanLine, UploadCloud, CheckCircle, Search, AlertCircle, FileText, Printer, Settings } from 'lucide-react';
 import { useClinic } from '../contexts/ClinicContext';
+import AccountSettingsView from './AccountSettingsView';
 import { Card, InnerCard, Avatar, Input, s, printReceipt } from '../components/shared';
 import { useToast } from '../hooks/useToast';
 import LabOrdersManager from '../components/LabOrdersManager';
@@ -92,7 +93,7 @@ export default function RadiologyView() {
   const patientScans = scans.filter(s => s.patientId === selectedPatient?.id);
 
   return (
-    <div className="h-full flex flex-col p-4 md:p-6 gap-6 overflow-hidden">
+    <div className="min-h-full md:h-full flex flex-col p-4 md:p-6 gap-6 overflow-visible md:overflow-hidden">
       {/* Header */}
       <Card className="!p-4 shrink-0 flex flex-col md:flex-row items-center justify-between gap-4">
         <div className="flex items-center gap-4">
@@ -105,20 +106,21 @@ export default function RadiologyView() {
           </div>
         </div>
         <div className="flex bg-black/50 p-1.5 rounded-2xl border border-white/10 overflow-x-auto w-full md:w-auto gap-1">
-          {['orders', 'upload', 'history', 'billing'].map(tabId => (
+          {['orders', 'upload', 'history', 'billing', 'account'].map(tabId => (
             <button key={tabId} onClick={() => setTab(tabId)}
               className={`px-5 py-2.5 rounded-xl text-sm font-black transition-all flex items-center gap-1 ${tab === tabId ? 'bg-gradient-to-br from-slate-700 to-slate-800 text-purple-400 shadow-inner border border-slate-600' : 'text-slate-400 hover:text-white'}`}>
               {tabId === 'orders' && <AlertCircle className="w-4 h-4" />}
               {tabId === 'upload' ? (isAr ? 'رفع نتيجة' : 'Upload') 
                : tabId === 'history' ? (isAr ? 'سجل الأشعة' : 'History') 
                : tabId === 'orders' ? (isAr ? 'الطلبات الواردة' : 'Incoming Orders')
+               : tabId === 'account' ? (isAr ? 'إعدادات الحساب' : 'Account Settings')
                : (isAr ? 'المالية' : 'Billing')}
             </button>
           ))}
         </div>
       </Card>
 
-      <div className="flex-1 overflow-y-auto min-h-0 pe-1 pb-4">
+      <div className="flex-1 overflow-visible md:overflow-y-auto min-h-0 pe-1 pb-4">
 
         {/* ── Incoming Orders ── */}
         {tab === 'orders' && (
@@ -333,6 +335,12 @@ export default function RadiologyView() {
                 ))}
               </div>
             )}
+          </div>
+        )}
+
+        {tab === 'account' && (
+          <div className="animate-in slide-in-from-bottom-4">
+            <AccountSettingsView />
           </div>
         )}
       </div>

@@ -3,6 +3,7 @@ import { Search, Plus, Calendar, Bell, FileText, CheckCircle, Printer } from 'lu
 import { useClinic } from '../contexts/ClinicContext';
 import { Card, InnerCard, Avatar, Input, s, printReceipt } from '../components/shared';
 import { useToast } from '../hooks/useToast';
+import AccountSettingsView from './AccountSettingsView';
 
 export default function ReceptionistView() {
   const { t, isAr, patients, queue, addPatient, addToQueue, createAppointment, getAppointmentsForDay, sendAppointmentReminder, currentOrganization, invoices, markInvoicePaid, activePage, setActivePage } = useClinic();
@@ -15,7 +16,7 @@ export default function ReceptionistView() {
   const [errors, setErrors] = useState({});
   const [apptForm, setApptForm] = useState({ patientId: null, doctor: '', date: '', time: '' });
 
-  const tabs = ['register', 'search', 'queue', 'appointments', 'billing'];
+  const tabs = ['register', 'search', 'queue', 'appointments', 'billing', 'account'];
 
   const validate = () => {
     const e = {};
@@ -65,7 +66,7 @@ export default function ReceptionistView() {
   const todaysAppointments = getAppointmentsForDay(todayStr);
 
   return (
-    <div className="h-full flex flex-col p-4 md:p-6 gap-6 overflow-hidden">
+    <div className="min-h-full md:h-full flex flex-col p-4 md:p-6 gap-6 overflow-visible md:overflow-hidden">
       {/* Header */}
       <Card className="!p-4 flex flex-col lg:flex-row items-center justify-between shrink-0 gap-4">
         <div className="flex items-center gap-4 min-w-0">
@@ -89,14 +90,15 @@ export default function ReceptionistView() {
                : tab === 'search' ? (isAr ? 'بحث' : 'Search')
                : tab === 'queue' ? (isAr ? 'الطابور' : 'Queue')
                : tab === 'appointments' ? (isAr ? 'المواعيد' : 'Appointments')
-               : (isAr ? 'الفواتير والمالية' : 'Billing')}
+               : tab === 'billing' ? (isAr ? 'الفواتير والمالية' : 'Billing')
+               : (isAr ? 'إعدادات الحساب' : 'Account Settings')}
             </button>
           ))}
         </div>
       </Card>
 
       {/* Body */}
-      <div className="flex-1 overflow-y-auto min-h-0 pb-4 pe-1">
+      <div className="flex-1 overflow-visible md:overflow-y-auto min-h-0 pb-4 pe-1">
         {/* ── Register ── */}
         {activeTab === 'register' && (
           <Card className="w-full max-w-3xl mx-auto flex flex-col gap-6 animate-in slide-in-from-bottom-4">
@@ -312,6 +314,12 @@ export default function ReceptionistView() {
                 ))}
               </div>
             )}
+          </div>
+        )}
+
+        {activeTab === 'account' && (
+          <div className="animate-in slide-in-from-bottom-4">
+            <AccountSettingsView />
           </div>
         )}
       </div>

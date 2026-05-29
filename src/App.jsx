@@ -263,7 +263,7 @@ function TopNav() {
 // ─── Role Router ─────────────────────────────────────────────────────────────
 function RoleView() {
   const { role, activePage } = useClinic();
-  if (activePage === 'account') {
+  if (activePage === 'account' && role === 'manager') {
     return <AccountSettingsView />;
   }
   switch (role) {
@@ -284,7 +284,7 @@ function InnerApp() {
 
   if (!isLoggedIn) {
     return (
-      <div className="h-screen w-screen overflow-hidden relative">
+      <div className="min-h-screen w-screen overflow-y-auto relative flex flex-col justify-center bg-[#f0f7f4] dark:bg-[#030806]">
         <Background />
         <AuthView />
       </div>
@@ -292,12 +292,12 @@ function InnerApp() {
   }
 
   return (
-    <div className="h-screen w-screen flex overflow-hidden relative">
+    <div className="min-h-screen md:h-screen w-screen flex flex-col md:flex-row overflow-y-auto md:overflow-hidden relative">
       <Background />
       <Sidebar onOpenSettings={() => setActivePage('account')} />
-      <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
+      <div className="flex-1 flex flex-col min-h-0 overflow-visible md:overflow-hidden">
         <TopNav />
-        <main className="flex-1 overflow-hidden p-3 md:p-4">
+        <main className="flex-1 overflow-visible md:overflow-y-auto p-3 md:p-4 min-h-0">
           <RoleView />
         </main>
       </div>

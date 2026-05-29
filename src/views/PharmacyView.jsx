@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import {
   Search, Package, CheckCircle, MessageSquare, Plus, PlusCircle,
-  FileText, ShoppingCart, Minus, Trash2, Printer
+  FileText, ShoppingCart, Minus, Trash2, Printer, Settings
 } from 'lucide-react';
 import { useClinic } from '../contexts/ClinicContext';
+import AccountSettingsView from './AccountSettingsView';
 import { Card, InnerCard, Avatar, Input, GlassModal, s, printReceipt } from '../components/shared';
 import { useToast } from '../hooks/useToast';
 
@@ -26,7 +27,7 @@ export default function PharmacyView() {
   const [customerName, setCustomerName]     = useState('');
   const [paymentMethod, setPaymentMethod]   = useState('cash');
 
-  const tabs = ['pos', 'prescriptions', 'inventory', 'inquiries', 'invoices'];
+  const tabs = ['pos', 'prescriptions', 'inventory', 'inquiries', 'invoices', 'account'];
 
   const handleDispense = (rx) => {
     const ok = dispensePrescription(rx.id);
@@ -208,7 +209,7 @@ export default function PharmacyView() {
   const pendingInquiries = inquiries.filter(i => i.status === 'Pending').length;
 
   return (
-    <div className="h-full flex flex-col p-4 md:p-6 gap-6 overflow-hidden">
+    <div className="min-h-full md:h-full flex flex-col p-4 md:p-6 gap-6 overflow-visible md:overflow-hidden">
       {/* Header */}
       <Card className="!p-4 shrink-0 flex flex-col md:flex-row items-center justify-between gap-4">
         <div className="flex items-center gap-4">
@@ -232,6 +233,7 @@ export default function PharmacyView() {
                : tabId === 'pos'          ? (isAr ? 'نقطة بيع' : 'POS')
                : tabId === 'inventory'    ? (isAr ? 'المخزون' : 'Inventory')
                : tabId === 'inquiries'    ? (isAr ? 'الاستفسارات' : 'Inquiries')
+               : tabId === 'account'      ? (isAr ? 'إعدادات الحساب' : 'Account Settings')
                :                           (isAr ? 'الفواتير' : 'Invoices')}
               {tabId === 'inquiries' && pendingInquiries > 0 && (
                 <span className="w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-black">{pendingInquiries}</span>
@@ -241,7 +243,7 @@ export default function PharmacyView() {
         </div>
       </Card>
 
-      <div className="flex-1 overflow-y-auto min-h-0 pe-1 pb-4">
+      <div className="flex-1 overflow-visible md:overflow-y-auto min-h-0 pe-1 pb-4">
 
         {/* ── Independent POS ── */}
         {tab === 'pos' && (
@@ -600,6 +602,12 @@ export default function PharmacyView() {
                 </div>
               </Card>
             ))}
+          </div>
+        )}
+
+        {tab === 'account' && (
+          <div className="animate-in slide-in-from-bottom-4">
+            <AccountSettingsView />
           </div>
         )}
       </div>

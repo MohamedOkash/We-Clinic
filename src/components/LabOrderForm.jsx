@@ -134,10 +134,25 @@ const SPECIALTY_TESTS = {
       { id: 'EMG-NCS', name: 'Electromyography & Nerve Conduction (EMG)', nameAr: 'رسم العضلات وسرعة توصيل الأعصاب' },
       { id: 'Carotid-Duplex', name: 'Carotid & Vertebral Duplex Scan', nameAr: 'أشعة الدوبلكس على الشرايين السباتية' },
     ]
+  },
+  physical_therapy: {
+    labs: [
+      { id: 'ESR-CRP', name: 'ESR & C-Reactive Protein (CRP)', nameAr: 'سرعة الترسيب وبروتين سي التفاعلي' },
+      { id: 'CBC', name: 'Complete Blood Count (CBC)', nameAr: 'صورة الدم الكاملة' },
+      { id: 'UricAcid', name: 'Serum Uric Acid (Gout Check)', nameAr: 'حمض البوليك (النقرس)' },
+      { id: 'RF', name: 'Rheumatoid Factor (RF)', nameAr: 'عامل الروماتويد' },
+    ],
+    imaging: [
+      { id: 'MRI-Spine', name: 'Spine MRI (Cervical/Lumbar)', nameAr: 'رنين مغناطيسي على العمود الفقري' },
+      { id: 'XRay-Spine', name: 'Spine X-Ray (Cervical/Lumbar)', nameAr: 'أشعة عادية على العمود الفقري' },
+      { id: 'XRay-Joint', name: 'Joint X-Ray (Affected Area)', nameAr: 'أشعة عادية على المفصل المصاب' },
+      { id: 'MRI-Joint', name: 'Joint MRI (Affected Area)', nameAr: 'رنين مغناطيسي على المفصل المصاب' },
+      { id: 'US-MSK', name: 'Musculoskeletal Ultrasound (MSK)', nameAr: 'سونار على الجهاز الحركي (أوتار وعضلات)' },
+    ]
   }
 };
 
-const SPECIALTIES_KEYS = ['general', 'cardiology', 'orthopedics', 'pediatrics', 'obgyn', 'dermatology', 'internal_medicine', 'neurology'];
+const SPECIALTIES_KEYS = ['general', 'cardiology', 'orthopedics', 'pediatrics', 'obgyn', 'dermatology', 'internal_medicine', 'neurology', 'physical_therapy'];
 
 const GENERAL_COMMON_TESTS = [
   { id: 'CBC', name: 'Complete Blood Count (CBC)', nameAr: 'صورة الدم الكاملة', type: 'labs' },

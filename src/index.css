@@ -14,30 +14,49 @@ html {
 
 :root {
   --bg-main: #f0f7f4;              /* Light mint green base */
+  --bg-surface: #ffffff;           /* Clean white card surface */
+  --bg-input: #f4faf7;             /* Very light mint background for inputs */
+  --border-input: #b2dfcd;         /* Soft green border with high contrast */
+  --border-input-focus: #10b981;   /* Focus emerald green */
   --text-primary: #062f22;         /* Deep forest green */
   --text-secondary: #0f513d;       /* Deep emerald green */
   --text-muted: #198754;           /* Medium forest green */
+  --text-placeholder: #588e7b;     /* Readable dark-green placeholder */
   --border-color: rgba(16, 185, 129, 0.12);
   --border-color-inner: rgba(16, 185, 129, 0.08);
   --shadow-color: rgba(16, 185, 129, 0.04);
+  --calendar-filter: invert(19%) sepia(85%) saturate(735%) hue-rotate(119deg) brightness(30%) contrast(97%); /* Emerald green icon in light mode */
 }
 
 .dark {
   --bg-main: #030806;              /* Dark forest green base */
+  --bg-surface: #0a1410;           /* Dark forest green card surface */
+  --bg-input: #050a08;             /* Deep blackish-green input background */
+  --border-input: rgba(16, 185, 129, 0.25);
+  --border-input-focus: #34d399;   /* Focus mint green */
   --text-primary: #e6fcf5;         /* Light mint tint */
   --text-secondary: #a3eed2;       /* Light emerald */
   --text-muted: #34d399;           /* Mint */
+  --text-placeholder: #2e745b;     /* Mint placeholder for dark mode */
   --border-color: rgba(16, 185, 129, 0.15);
   --border-color-inner: rgba(16, 185, 129, 0.08);
   --shadow-color: rgba(0, 0, 0, 0.7);
+  --calendar-filter: invert(90%) sepia(20%) saturate(1000%) hue-rotate(100deg) brightness(100%) contrast(100%); /* Mint icon in dark mode */
 }
 
 body {
   font-family: 'Inter', 'Cairo', system-ui, -apple-system, sans-serif;
   background: var(--bg-main);
   color: var(--text-primary);
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
   transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+@media (min-width: 768px) {
+  body {
+    overflow: hidden;
+  }
 }
 
 /* ─── Theme-aware Overrides for Light Mode ─── */
@@ -284,3 +303,113 @@ body {
   body { background: #fff; color: #000; }
   .no-print { display: none !important; }
 }
+
+/* ─── High Contrast Theme Inputs & Selects ────────────────────────── */
+.theme-input {
+  background-color: var(--bg-input) !important;
+  color: var(--text-primary) !important;
+  border: 1.5px solid var(--border-input) !important;
+  border-radius: 12px;
+  height: 48px;
+  width: 100%;
+  padding-left: 16px;
+  padding-right: 16px;
+  font-weight: 600;
+  font-size: 0.925rem;
+  transition: all 0.2s ease;
+}
+.theme-input:focus {
+  outline: none !important;
+  border-color: var(--border-input-focus) !important;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.25) !important;
+}
+.theme-input::placeholder {
+  color: var(--text-placeholder) !important;
+  opacity: 0.8;
+}
+
+.theme-input-sm {
+  background-color: var(--bg-input) !important;
+  color: var(--text-primary) !important;
+  border: 1.5px solid var(--border-input) !important;
+  border-radius: 8px;
+  height: 40px;
+  width: 100%;
+  padding-left: 12px;
+  padding-right: 12px;
+  font-weight: 600;
+  font-size: 0.875rem;
+  transition: all 0.2s ease;
+}
+.theme-input-sm:focus {
+  outline: none !important;
+  border-color: var(--border-input-focus) !important;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.25) !important;
+}
+.theme-input-sm::placeholder {
+  color: var(--text-placeholder) !important;
+  opacity: 0.8;
+}
+
+/* Ensure options in select dropdowns are highly readable in all browsers */
+.theme-input option,
+.theme-input-sm option {
+  background-color: var(--bg-surface) !important;
+  color: var(--text-primary) !important;
+}
+
+/* High contrast label class */
+.theme-label {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--text-secondary) !important;
+  letter-spacing: 0.025em;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+/* Custom styled native Date Picker */
+input[type="date"] {
+  position: relative;
+  direction: ltr; /* Force numerals LTR */
+}
+
+/* Place calendar icon on the left/right according to HTML dir attribute */
+html[dir="rtl"] input[type="date"] {
+  text-align: right;
+  padding-left: 16px;
+  padding-right: 44px; /* Room for icon on right */
+}
+html[dir="ltr"] input[type="date"] {
+  text-align: left;
+  padding-left: 44px; /* Room for icon on left */
+  padding-right: 16px;
+}
+
+/* webkit date indicator positioning and filter */
+input[type="date"]::-webkit-calendar-picker-indicator {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  background-color: transparent;
+  filter: var(--calendar-filter) !important;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+html[dir="rtl"] input[type="date"]::-webkit-calendar-picker-indicator {
+  right: 12px;
+  left: auto;
+}
+html[dir="ltr"] input[type="date"]::-webkit-calendar-picker-indicator {
+  left: 12px;
+  right: auto;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator:hover {
+  transform: translateY(-50%) scale(1.15);
+  opacity: 0.9;
+}
+

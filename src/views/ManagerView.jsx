@@ -45,7 +45,7 @@ export default function ManagerView() {
   ];
 
   return (
-    <div className="h-full flex flex-col p-4 md:p-6 gap-6 overflow-y-auto">
+    <div className="min-h-full md:h-full flex flex-col p-4 md:p-6 gap-6 overflow-visible md:overflow-y-auto">
       {/* Header */}
       <Card className="!p-5 shrink-0">
         <div className="flex items-center gap-4">

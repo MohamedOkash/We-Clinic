@@ -3,7 +3,7 @@
 // ============================================================
 export const translations = {
   en: {
-    appTitle: 'Our Clinic 3D', receptionist: 'Receptionist', doctor: 'Doctor',
+    appTitle: 'Our Clinic', receptionist: 'Receptionist', doctor: 'Doctor',
     pharmacy: 'Pharmacy', radiology: 'Radiology & Labs', patient: 'Patient',
     manager: 'Manager', admin: 'System Admin', login: 'Login', emailOrPhone: 'Email or Phone Number',
     password: 'Password', signIn: 'Sign In', logout: 'Logout',
@@ -65,7 +65,7 @@ export const translations = {
     bookingTab: 'Book Appointment',
   },
   ar: {
-    appTitle: 'عيادتنا 3D', receptionist: 'الاستقبال', doctor: 'الطبيب',
+    appTitle: 'عيادتنا', receptionist: 'الاستقبال', doctor: 'الطبيب',
     pharmacy: 'الصيدلية', radiology: 'الأشعة والتحاليل', patient: 'المريض',
     manager: 'المدير', admin: 'المدير العام', login: 'تسجيل الدخول', emailOrPhone: 'البريد أو رقم الهاتف',
     password: 'كلمة المرور', signIn: 'دخول للنظام', logout: 'تسجيل الخروج',
@@ -153,6 +153,7 @@ export const SPECIALTIES = [
   { id: 'general_surgery',    en: 'General Surgery',            ar: 'الجراحة العامة' },
   { id: 'oncology',           en: 'Oncology',                   ar: 'الأورام' },
   { id: 'dentistry',          en: 'Dentistry',                  ar: 'طب الأسنان' },
+  { id: 'physical_therapy',   en: 'Physical Therapy',           ar: 'العلاج الطبيعي' },
 ];
 
 // ============================================================
@@ -213,6 +214,16 @@ export const INITIAL_ORGANIZATIONS = [
     role: 'radiology',
     name: 'Scan House Radiology',
     nameAr: 'سكان هاوس للأشعة',
+    city: 'Cairo',
+    cityAr: 'القاهرة',
+  },
+  {
+    id: 'clinic_pt_rehab',
+    type: 'clinic',
+    role: 'doctor',
+    specialty: 'physical_therapy',
+    name: 'Rehab Physical Therapy Clinic',
+    nameAr: 'عيادة ريحاب للعلاج الطبيعي والتأهيل',
     city: 'Cairo',
     cityAr: 'القاهرة',
   },
@@ -323,6 +334,14 @@ export const SPECIALTY_DRUGS = {
     { name: 'Ibuprofen 400mg',        desc: 'مسكن ومضاد للالتهاب لتخفيف آلام الأسنان وتورم اللثة بعد الخلع.' },
     { name: 'Metronidazole 500mg',    desc: 'مضاد حيوي لعلاج التهابات اللثة التقرحية والعدوى اللاهوائية بالفم.' },
   ],
+  physical_therapy: [
+    { name: 'Fastum Gel',             desc: 'مضاد للالتهابات ومسكن موضعي لآلام العضلات والمفاصل.' },
+    { name: 'Myolgin',                desc: 'بسط للعضلات ومسكن للألم لعلاج التشنجات العضلية.' },
+    { name: 'Milga Tablets',          desc: 'فيتامين ب مركب لتقوية الأعصاب وتخفيف آلام التهاب الأعصاب.' },
+    { name: 'Reparil Gel',            desc: 'مضاد للتورم والالتهابات والكدمات الموضعية.' },
+    { name: 'Dimra',                  desc: 'بسط عضلات ومسكن للآلام العضلية الهيكلية الحادة.' },
+    { name: 'Neuroton',               desc: 'حقن/أقراص فيتامين ب لتغذية وتقوية الأعصاب الطرفية.' },
+  ],
 };
 
 // ============================================================
@@ -409,6 +428,14 @@ export const ICD_10 = [
   // ─── Dentistry ───────────────────────────────────────────────
   { code: 'K02.9',  en: 'Dental caries (cavities)',            ar: 'تسوس الأسنان',                          specialty: 'dentistry' },
   { code: 'K05.1',  en: 'Chronic gingivitis',                  ar: 'التهاب اللثة المزمن',                   specialty: 'dentistry' },
+  { code: 'M54.2',  en: 'Cervicalgia / Neck Pain',              ar: 'ألم الرقبة (فقرات عنقية)',              specialty: 'physical_therapy' },
+  { code: 'M54.5',  en: 'Low back pain',                        ar: 'ألم أسفل الظهر',                        specialty: 'physical_therapy' },
+  { code: 'M51.2',  en: 'Lumbago due to intervertebral disc displacement', ar: 'انزلاق غضروفي قطني',           specialty: 'physical_therapy' },
+  { code: 'M75.0',  en: 'Adhesive capsulitis of shoulder (Frozen Shoulder)', ar: 'تيبس الكتف (الكتف المتجمدة)',  specialty: 'physical_therapy' },
+  { code: 'G51.0',  en: "Bell's palsy (Facial nerve paralysis)",ar: 'شلل العصب السابع (الوجهي)',             specialty: 'physical_therapy' },
+  { code: 'M79.1',  en: 'Myalgia (Muscle pain)',                 ar: 'ألم العضلات',                           specialty: 'physical_therapy' },
+  { code: 'M25.6',  en: 'Joint stiffness, not elsewhere classified', ar: 'تيبس المفاصل',                       specialty: 'physical_therapy' },
+  { code: 'S39.011',en: 'Strain of muscle, fascia and tendon of lower back', ar: 'شد عضلي أسفل الظهر',       specialty: 'physical_therapy' },
 ];
 
 // ============================================================
@@ -698,37 +725,66 @@ Object.keys(translations_extend.en).forEach(key => {
 // GOOGLE GEMINI AI HELPER
 // ============================================================
 export async function callGemini(prompt, lang = 'ar') {
-  const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
-  if (!apiKey || apiKey.includes('xxxxxxx')) {
-    // Fallback mock when no key is set
-    await new Promise(r => setTimeout(r, 1200));
-    return lang === 'ar'
-      ? 'لم يتم إعداد مفتاح Google Gemini API. يرجى إضافة VITE_GEMINI_API_KEY في ملف الـ .env'
-      : 'Google Gemini API key not set. Please add VITE_GEMINI_API_KEY to your .env file';
-  }
-  
   try {
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+    const url = '/api/gemini';
     const res = await fetch(url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        contents: [
-          {
-            parts: [
-              { text: prompt }
-            ]
-          }
-        ]
-      }),
+      body: JSON.stringify({ prompt }),
     });
-    if (!res.ok) throw new Error(`Gemini API error ${res.status}`);
+
+    const contentType = res.headers.get('Content-Type') || '';
+    if (!res.ok || !contentType.includes('application/json')) {
+      let errorMsg = `Server responded with status ${res.status}`;
+      if (contentType.includes('application/json')) {
+        const errorData = await res.json().catch(() => ({}));
+        errorMsg = errorData.error || errorMsg;
+      } else {
+        errorMsg = `Invalid response content-type: ${contentType || 'none'}. Secure proxy endpoint may not be active on this route.`;
+      }
+      throw new Error(errorMsg);
+    }
+
     const data = await res.json();
     return data.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
   } catch (err) {
-    console.error('Gemini API Error:', err);
+    console.error('Gemini API Proxy Error:', err);
+    
+    const clientApiKey = import.meta.env.VITE_GEMINI_API_KEY;
+    if (clientApiKey && !clientApiKey.includes('xxxxxxx')) {
+      console.warn('Backend proxy failed. Retrying direct client-side fallback query...');
+      try {
+        const directUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${clientApiKey}`;
+        const directRes = await fetch(directUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: prompt }] }]
+          }),
+        });
+
+        const directContentType = directRes.headers.get('Content-Type') || '';
+        if (!directRes.ok || !directContentType.includes('application/json')) {
+          let directErrorMsg = `Google API status ${directRes.status}`;
+          if (directContentType.includes('application/json')) {
+            const errorData = await directRes.json().catch(() => ({}));
+            directErrorMsg = errorData.error?.message || directErrorMsg;
+          }
+          throw new Error(directErrorMsg);
+        }
+
+        const directData = await directRes.json();
+        return directData.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
+      } catch (fallbackErr) {
+        console.error('Gemini Client-side Fallback also failed:', fallbackErr);
+        throw fallbackErr;
+      }
+    }
+    
     throw err;
   }
 }

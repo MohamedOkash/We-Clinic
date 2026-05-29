@@ -6,16 +6,16 @@ export const s = {
   card: 'bg-emerald-50/75 dark:bg-emerald-950/20 backdrop-blur-2xl border border-emerald-500/10 dark:border-emerald-400/10 shadow-lg dark:shadow-[0_8px_32px_0_rgba(16,185,129,0.05)] rounded-3xl text-emerald-900 dark:text-emerald-50 transition-all duration-300 hover:shadow-xl hover:border-emerald-500/20',
   cardStatic: 'bg-emerald-50/75 dark:bg-emerald-950/20 backdrop-blur-2xl border border-emerald-500/10 dark:border-emerald-400/10 shadow-lg dark:shadow-[0_8px_32px_0_rgba(16,185,129,0.05)] rounded-3xl text-emerald-900 dark:text-emerald-50',
   inner: 'bg-emerald-100/30 dark:bg-black/40 backdrop-blur-xl border border-emerald-500/5 dark:border-emerald-400/5 shadow-sm rounded-2xl text-emerald-900 dark:text-emerald-100',
-  input: 'bg-emerald-50/50 dark:bg-black/50 text-emerald-900 dark:text-emerald-50 placeholder-emerald-400 dark:placeholder-emerald-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500/30 transition-all duration-200 h-12 w-full font-semibold border border-emerald-200/60 dark:border-emerald-500/10 px-4 text-[0.925rem]',
-  inputSm: 'bg-emerald-50/50 dark:bg-black/50 text-emerald-900 dark:text-emerald-50 placeholder-emerald-400 dark:placeholder-emerald-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500/40 transition-all duration-200 h-10 w-full px-3 text-sm font-semibold border border-emerald-200/60 dark:border-emerald-500/10',
+  input: 'theme-input',
+  inputSm: 'theme-input-sm',
   btnPrimary: 'bg-gradient-to-br from-emerald-500 to-teal-700 text-white shadow-[0_4px_15px_rgba(16,185,129,0.3)] hover:shadow-[0_6px_20px_rgba(16,185,129,0.4)] active:scale-[0.97] hover:brightness-110 transition-all duration-200 rounded-xl h-12 font-bold px-8 flex items-center justify-center gap-2 shrink-0 border border-emerald-400/20 select-none keep-text-white',
   btnAI: 'bg-gradient-to-br from-violet-600 to-fuchsia-600 text-white shadow-[0_0_20px_rgba(192,132,252,0.4),inset_2px_2px_5px_rgba(255,255,255,0.3)] active:scale-[0.97] transition-all duration-200 rounded-xl h-12 font-bold px-6 flex items-center justify-center gap-2 border border-fuchsia-400/40 select-none hover:shadow-glow-purple keep-text-white',
   btnSec: 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-500/25 shadow-sm active:scale-[0.97] hover:bg-emerald-100 dark:hover:bg-emerald-950/60 transition-all duration-200 rounded-xl h-12 font-semibold px-6 flex items-center justify-center gap-2 shrink-0 select-none',
   btnGhost: 'text-emerald-600 dark:text-emerald-400 hover:text-emerald-900 dark:hover:text-emerald-50 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 active:scale-[0.97] transition-all duration-200 rounded-xl h-10 font-semibold px-4 flex items-center justify-center gap-2 shrink-0 select-none',
   btnDanger: 'bg-gradient-to-br from-red-600 to-rose-700 text-white shadow-btn active:scale-[0.97] hover:brightness-110 transition-all duration-200 rounded-xl h-12 font-bold px-8 flex items-center justify-center gap-2 shrink-0 border border-red-400/20 select-none keep-text-white',
   badge: 'bg-emerald-100/50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-500/30 text-emerald-700 dark:text-emerald-300 px-3.5 py-1 rounded-full text-xs font-bold whitespace-nowrap shrink-0 tracking-wide',
-  label: 'text-sm font-semibold text-emerald-700 dark:text-emerald-400 px-1 tracking-wide',
-};
+  label: 'theme-label',
+};;
 
 // ─── Input ────────────────────────────────────────────────────────────────────
 export function Input({ label, icon: Icon, className, error, ...props }) {

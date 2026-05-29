@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { 
-  User, Mail, Shield, Building2, Globe, Sun, Moon, Lock, Save, KeyRound, Activity, Sparkles
+  User, Mail, Shield, Building2, Globe, Sun, Moon, Lock, Save, KeyRound, Activity
 } from 'lucide-react';
 import { useClinic } from '../contexts/ClinicContext';
 import { Card, InnerCard, Input, s } from '../components/shared';
@@ -11,17 +11,32 @@ export default function AccountSettingsView() {
   const { 
     loggedUser, role, specialty, organizations, 
     lang, setLang, theme, setTheme, isAr, t, 
-    changeUserPassword 
+    changeUserPassword, updateUserProfile 
   } = useClinic();
 
   const toast = useToast();
   const isDark = theme !== 'light';
 
+  // Personal Info States
+  const [name, setName] = useState('');
+  const [nameAr, setNameAr] = useState('');
+  const [phone, setPhone] = useState('');
+  const [profileLoading, setProfileLoading] = useState(false);
+
   // Password States
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [passwordLoading, setPasswordLoading] = useState(false);
+
+  // Sync state with loggedUser info
+  useEffect(() => {
+    if (loggedUser) {
+      setName(loggedUser.name || '');
+      setNameAr(loggedUser.nameAr || '');
+      setPhone(loggedUser.phone || '');
+    }
+  }, [loggedUser]);
 
   // Find organization details
   const org = organizations.find(o => o.id === loggedUser?.organizationId);
@@ -34,6 +49,31 @@ export default function AccountSettingsView() {
   // Find specialty details
   const specObj = SPECIALTIES.find(s => s.id === specialty || s.id === loggedUser?.specialty);
   const specialtyLabel = specObj ? (isAr ? specObj.ar : specObj.en) : null;
+
+  // Handle personal profile details update
+  const handleProfileSave = async () => {
+    if (!name.trim()) {
+      toast.error(isAr ? 'الاسم بالإنجليزية مطلوب' : 'Name in English is required');
+      return;
+    }
+    if (!nameAr.trim()) {
+      toast.error(isAr ? 'الاسم بالعربية مطلوب' : 'Name in Arabic is required');
+      return;
+    }
+    setProfileLoading(true);
+    try {
+      await updateUserProfile({
+        name: name.trim(),
+        nameAr: nameAr.trim(),
+        phone: phone.trim()
+      });
+      toast.success(isAr ? 'تم حفظ البيانات الشخصية بنجاح!' : 'Profile details updated successfully!');
+    } catch (err) {
+      toast.error(isAr ? 'حدث خطأ أثناء تحديث البيانات' : 'Error updating profile details');
+    } finally {
+      setProfileLoading(false);
+    }
+  };
 
   // Handle password change submission
   const handlePasswordSave = async () => {
@@ -49,7 +89,7 @@ export default function AccountSettingsView() {
       toast.error(isAr ? 'كلمتا المرور غير متطابقتين' : 'Passwords do not match');
       return;
     }
-    setLoading(true);
+    setPasswordLoading(true);
     try {
       await changeUserPassword(currentPassword, newPassword);
       toast.success(isAr ? 'تم تغيير كلمة المرور بنجاح!' : 'Password updated successfully!');
@@ -59,12 +99,12 @@ export default function AccountSettingsView() {
     } catch (err) {
       toast.error(err.message || (isAr ? 'خطأ أثناء تغيير كلمة المرور' : 'Error updating password'));
     } finally {
-      setLoading(false);
+      setPasswordLoading(false);
     }
   };
 
   return (
-    <div className="h-full flex flex-col p-4 md:p-6 gap-6 overflow-y-auto scrollbar-thin">
+    <div className="min-h-full md:h-full flex flex-col p-4 md:p-6 gap-6 overflow-visible md:overflow-y-auto scrollbar-thin">
       
       {/* Header card */}
       <Card className="!p-4 shrink-0 flex items-center gap-4">
@@ -72,8 +112,8 @@ export default function AccountSettingsView() {
           <User className="w-6 h-6 text-white keep-text-white" />
         </div>
         <div>
-          <h2 className="font-black text-2xl text-emerald-950 dark:text-emerald-50">{isAr ? 'الملف الشخصي وإعدادات الحساب' : 'Account & Profile Settings'}</h2>
-          <p className="text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-widest">{isAr ? 'تعديل كلمة المرور، اللغة، والمظهر' : 'Manage password, language, and theme'}</p>
+          <h2 className="font-black text-2xl text-emerald-950 dark:text-emerald-50">{isAr ? 'حسابي الشخصي وإعداداتي' : 'My Account & Settings'}</h2>
+          <p className="text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-widest">{isAr ? 'إدارة البيانات، المظهر، وكلمة المرور' : 'Manage profile info, layout, and credentials'}</p>
         </div>
       </Card>
 
@@ -84,50 +124,80 @@ export default function AccountSettingsView() {
           <Card className="flex flex-col gap-6">
             <h3 className="font-black text-emerald-950 dark:text-emerald-50 text-lg flex items-center gap-2 border-b border-emerald-500/10 dark:border-emerald-400/10 pb-3 select-none">
               <Shield className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-              {isAr ? 'معلومات الهوية والوظيفة' : 'Identity & Career Details'}
+              {isAr ? 'الملف الشخصي والبيانات' : 'Personal Profile & Details'}
             </h3>
 
             {/* Profile Avatar / Large Initials */}
             <div className="flex flex-col items-center text-center p-4 rounded-2xl bg-emerald-500/5 border border-emerald-500/10 dark:bg-black/30 dark:border-white/5 gap-3">
               <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-700 text-white keep-text-white flex items-center justify-center text-3xl font-black border border-emerald-300/30 shadow-md">
-                {(loggedUser?.name || '?').charAt(0).toUpperCase()}
+                {(name || '?').charAt(0).toUpperCase()}
               </div>
               <div>
-                <h4 className="font-black text-emerald-950 dark:text-emerald-50 text-base">{isAr ? loggedUser?.nameAr : loggedUser?.name}</h4>
+                <h4 className="font-black text-emerald-950 dark:text-emerald-50 text-base">{isAr ? nameAr : name}</h4>
                 <p className="text-xs font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-widest mt-0.5">{t(role)}</p>
               </div>
             </div>
 
-            {/* Info Fields */}
+            {/* Editable Profile Fields */}
             <div className="flex flex-col gap-4">
-              {/* Email */}
-              <div className="flex items-center gap-3 p-3.5 rounded-xl bg-emerald-500/5 dark:bg-black/30 border border-emerald-500/10 dark:border-white/5">
-                <Mail className="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0" />
-                <div className="min-w-0">
-                  <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 block uppercase">{isAr ? 'البريد الإلكتروني' : 'Email Address'}</span>
-                  <span className="text-xs font-mono font-bold text-emerald-950 dark:text-emerald-50 truncate block">{loggedUser?.email}</span>
-                </div>
-              </div>
+              <Input 
+                label={isAr ? 'الاسم بالكامل (بالإنجليزية)' : 'Full Name (English)'} 
+                value={name} 
+                onChange={e => setName(e.target.value)} 
+              />
+              <Input 
+                label={isAr ? 'الاسم بالكامل (بالعربية)' : 'Full Name (Arabic)'} 
+                value={nameAr} 
+                onChange={e => setNameAr(e.target.value)} 
+              />
+              <Input 
+                label={isAr ? 'رقم الهاتف الشخصي' : 'Phone Number'} 
+                value={phone} 
+                onChange={e => setPhone(e.target.value)} 
+              />
 
-              {/* Organization */}
-              <div className="flex items-center gap-3 p-3.5 rounded-xl bg-emerald-500/5 dark:bg-black/30 border border-emerald-500/10 dark:border-white/5">
-                <Building2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0" />
-                <div className="min-w-0">
-                  <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 block uppercase">{isAr ? 'المنشأة الطبية' : 'Medical Facility'}</span>
-                  <span className="text-xs font-bold text-emerald-950 dark:text-emerald-50 truncate block">{facilityName}</span>
-                </div>
-              </div>
+              <button 
+                onClick={handleProfileSave}
+                disabled={profileLoading}
+                className={`${s.btnSec} w-full gap-2 flex items-center justify-center`}
+              >
+                <Save className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                <span>{profileLoading ? (isAr ? 'جاري الحفظ...' : 'Saving...') : (isAr ? 'حفظ البيانات الشخصية' : 'Save Details')}</span>
+              </button>
 
-              {/* Specialty (If exists) */}
-              {specialtyLabel && (
-                <div className="flex items-center gap-3 p-3.5 rounded-xl bg-emerald-500/5 dark:bg-black/30 border border-emerald-500/10 dark:border-white/5">
-                  <Activity className="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+              <hr className="border-emerald-500/10 dark:border-emerald-400/10 my-1" />
+
+              {/* Read-Only Identity Fields */}
+              <div className="flex flex-col gap-3">
+                {/* Email */}
+                <div className="flex items-center gap-3 p-3 rounded-xl bg-emerald-500/5 dark:bg-black/20 border border-emerald-500/5 dark:border-white/5">
+                  <Mail className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
                   <div className="min-w-0">
-                    <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 block uppercase">{isAr ? 'التخصص السريري' : 'Clinical Specialty'}</span>
-                    <span className="text-xs font-bold text-emerald-950 dark:text-emerald-50 truncate block">{specialtyLabel}</span>
+                    <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 block uppercase">{isAr ? 'البريد الإلكتروني' : 'Email Address'}</span>
+                    <span className="text-xs font-mono font-bold text-emerald-950 dark:text-emerald-50 truncate block">{loggedUser?.email}</span>
                   </div>
                 </div>
-              )}
+
+                {/* Organization */}
+                <div className="flex items-center gap-3 p-3 rounded-xl bg-emerald-500/5 dark:bg-black/20 border border-emerald-500/5 dark:border-white/5">
+                  <Building2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                  <div className="min-w-0">
+                    <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 block uppercase">{isAr ? 'المنشأة الطبية المعين بها' : 'Assigned Facility'}</span>
+                    <span className="text-xs font-bold text-emerald-950 dark:text-emerald-50 truncate block">{facilityName}</span>
+                  </div>
+                </div>
+
+                {/* Specialty (If exists) */}
+                {specialtyLabel && (
+                  <div className="flex items-center gap-3 p-3 rounded-xl bg-emerald-500/5 dark:bg-black/20 border border-emerald-500/5 dark:border-white/5">
+                    <Activity className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                    <div className="min-w-0">
+                      <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 block uppercase">{isAr ? 'التخصص الطبي الفعلي' : 'Clinical Specialty'}</span>
+                      <span className="text-xs font-bold text-emerald-950 dark:text-emerald-50 truncate block">{specialtyLabel}</span>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           </Card>
         </div>
@@ -219,11 +289,11 @@ export default function AccountSettingsView() {
 
               <button 
                 onClick={handlePasswordSave} 
-                disabled={loading}
+                disabled={passwordLoading}
                 className={`${s.btnPrimary} w-full mt-2 gap-2 flex items-center justify-center`}
               >
                 <KeyRound className="w-5 h-5 text-white keep-text-white" />
-                <span>{loading ? (isAr ? 'جاري الحفظ...' : 'Saving...') : (isAr ? 'تعديل وحفظ كلمة المرور الجديدة' : 'Save Password')}</span>
+                <span>{passwordLoading ? (isAr ? 'جاري الحفظ...' : 'Saving...') : (isAr ? 'تعديل وحفظ كلمة المرور الجديدة' : 'Save Password')}</span>
               </button>
             </div>
           </Card>

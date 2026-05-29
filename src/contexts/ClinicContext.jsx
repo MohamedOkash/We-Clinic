@@ -12,7 +12,9 @@ import {
   createUserWithEmailAndPassword, 
   signOut,
   onAuthStateChanged,
-  updatePassword
+  updatePassword,
+  GoogleAuthProvider,
+  signInWithPopup
 } from 'firebase/auth';
 import { 
   collection, 
@@ -81,6 +83,15 @@ const INITIAL_USERS = [
     password: 'password',
     role: 'radiology',
     organizationId: 'lab_alpha',
+  },
+  {
+    email: 'pt@clinic.com',
+    name: 'Dr. Khaled Rehab',
+    nameAr: 'د. خالد تأهيل',
+    password: 'password',
+    role: 'doctor',
+    specialty: 'physical_therapy',
+    organizationId: 'clinic_pt_rehab',
   },
   {
     email: 'manager@clinic.com',
@@ -825,6 +836,107 @@ export function ClinicProvider({ children }) {
       return newUser;
     }
   }, [allUsers, lang, organizations, setOrganizations, setUsers, setRole, setCurrentOrganizationId, setSpecialty, setLoggedUser, setIsLoggedIn, setActivePage]);
+
+  const handleGoogleSignIn = useCallback(async (selectedRole, selectedSpecialty, selectedOrgId) => {
+    if (!auth || !db) {
+      // Mock Google Login Fallback
+      const mockGoogleUser = {
+        email: 'google_user@gmail.com',
+        name: 'Google User',
+        nameAr: 'مستخدم جوجل',
+        role: selectedRole,
+        specialty: selectedRole === 'doctor' ? (selectedSpecialty || 'general') : null,
+        organizationId: selectedOrgId || getDefaultOrganizationId(selectedRole, selectedSpecialty, organizations),
+      };
+      
+      setRole(mockGoogleUser.role);
+      setCurrentOrganizationId(mockGoogleUser.organizationId);
+      if (mockGoogleUser.specialty) setSpecialty(mockGoogleUser.specialty);
+      setLoggedUser(mockGoogleUser);
+      setIsLoggedIn(true);
+      
+      const defaultPage = mockGoogleUser.role === 'doctor' ? 'registry'
+                        : mockGoogleUser.role === 'pharmacy' ? 'pos'
+                        : mockGoogleUser.role === 'receptionist' ? 'register'
+                        : mockGoogleUser.role === 'radiology' ? 'orders'
+                        : mockGoogleUser.role === 'patient' ? 'home'
+                        : 'dashboard';
+      setActivePage(defaultPage);
+      return mockGoogleUser;
+    }
+
+    try {
+      const provider = new GoogleAuthProvider();
+      const result = await signInWithPopup(auth, provider);
+      const firebaseUser = result.user;
+      
+      const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
+      if (userDoc.exists()) {
+        const profile = userDoc.data();
+        setRole(profile.role);
+        setCurrentOrganizationId(profile.organizationId);
+        if (profile.specialty) setSpecialty(profile.specialty);
+        setLoggedUser(profile);
+        setIsLoggedIn(true);
+        
+        const defaultPage = profile.role === 'doctor' ? 'registry'
+                          : profile.role === 'pharmacy' ? 'pos'
+                          : profile.role === 'receptionist' ? 'register'
+                          : profile.role === 'radiology' ? 'orders'
+                          : profile.role === 'patient' ? 'home'
+                          : 'dashboard';
+        setActivePage(defaultPage);
+        return profile;
+      } else {
+        let orgId = selectedOrgId;
+        if (selectedRole === 'doctor') {
+          orgId = `clinic_dr_${firebaseUser.email.replace(/[^a-zA-Z0-9]/g, '_')}_${Date.now()}`;
+          const newOrg = {
+            id: orgId,
+            type: 'clinic',
+            role: 'doctor',
+            specialty: selectedSpecialty || 'general',
+            name: `Dr. ${firebaseUser.displayName || firebaseUser.email.split('@')[0]} Clinic`,
+            nameAr: `عيادة د. ${firebaseUser.displayName || firebaseUser.email.split('@')[0]}`,
+            city: 'Cairo',
+            cityAr: 'القاهرة',
+          };
+          await setDoc(doc(db, 'organizations', orgId), newOrg);
+        } else {
+          if (!orgId) orgId = getDefaultOrganizationId(selectedRole, selectedSpecialty, organizations);
+        }
+        
+        const profile = {
+          email: firebaseUser.email,
+          name: firebaseUser.displayName || firebaseUser.email.split('@')[0],
+          nameAr: firebaseUser.displayName || firebaseUser.email.split('@')[0],
+          role: selectedRole,
+          specialty: selectedRole === 'doctor' ? (selectedSpecialty || 'general') : null,
+          organizationId: orgId,
+        };
+        
+        await setDoc(doc(db, 'users', firebaseUser.uid), profile);
+        
+        setRole(profile.role);
+        setCurrentOrganizationId(profile.organizationId);
+        if (profile.specialty) setSpecialty(profile.specialty);
+        setLoggedUser(profile);
+        setIsLoggedIn(true);
+        
+        const defaultPage = profile.role === 'doctor' ? 'registry'
+                          : profile.role === 'pharmacy' ? 'pos'
+                          : profile.role === 'receptionist' ? 'register'
+                          : profile.role === 'radiology' ? 'orders'
+                          : profile.role === 'patient' ? 'home'
+                          : 'dashboard';
+        setActivePage(defaultPage);
+        return profile;
+      }
+    } catch (err) {
+      console.error('Google Sign In Error:', err);
+      throw err;
+    }
+  }, [organizations, lang, setRole, setCurrentOrganizationId, setSpecialty, setLoggedUser, setIsLoggedIn, setActivePage]);
 
   const handleLogout = useCallback(async () => {
     if (auth) {
@@ -1719,6 +1831,19 @@ export function ClinicProvider({ children }) {
     setLoggedUser(prev => prev ? { ...prev, password: newPassword } : null);
   }, [role, db, auth, loggedUser, lang, changeAdminPassword, setUsers, setLoggedUser]);
 
+  const updateUserProfile = useCallback(async (updatedData) => {
+    if (role === 'admin') {
+      setLoggedUser(prev => prev ? { ...prev, ...updatedData } : null);
+      return;
+    }
+    const uid = auth?.currentUser?.uid;
+    if (uid && db) {
+      await setDoc(doc(db, 'users', uid), updatedData, { merge: true });
+    }
+    setLoggedUser(prev => prev ? { ...prev, ...updatedData } : null);
+    setUsers(prev => prev.map(u => u.email === loggedUser.email ? { ...u, ...updatedData } : u));
+  }, [role, auth, db, loggedUser, setLoggedUser, setUsers]);
+
   const addOrganization = useCallback(async (newOrg) => {
     const id = newOrg.id || `org_${Date.now()}`;
     const orgObj = { ...newOrg, id };
@@ -1803,7 +1928,7 @@ export function ClinicProvider({ children }) {
   const value = {
     // Auth
     isLoggedIn, role, setRole, specialty, setSpecialty, loggedUser,
-    handleLogin, handleSignUp, handleLogout,
+    handleLogin, handleSignUp, handleGoogleSignIn, handleLogout,
     organizations, currentOrganization, currentOrganizationId, setCurrentOrganizationId,
     allUsers, setUsers,
     // UI
@@ -1828,7 +1953,7 @@ export function ClinicProvider({ children }) {
     createInvoice, markInvoicePaid, getInvoicesForDay, getInvoiceById,
     getStockStatus,
     // Admin
-    changeAdminPassword, changeUserPassword, addOrganization, deleteOrganization,
+    changeAdminPassword, changeUserPassword, updateUserProfile, addOrganization, deleteOrganization,
     adminCreateUser, adminUpdateUser, adminDeleteUser,
     updatePatient, updateMedication, deleteMedication,
   };

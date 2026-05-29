@@ -1,9 +1,10 @@
 import { useState, useRef, useEffect } from 'react';
-import { Bot, Send, Bell, Calendar, FileText, Home, Pill, Clock, Plus, Trash2, BrainCircuit } from 'lucide-react';
+import { Bot, Send, Bell, Calendar, FileText, Home, Pill, Clock, Plus, Trash2, BrainCircuit, Settings } from 'lucide-react';
 import { useClinic } from '../contexts/ClinicContext';
 import { Card, InnerCard, Avatar, Input, s } from '../components/shared';
 import { useToast } from '../hooks/useToast';
 import { callGemini } from '../constants';
+import AccountSettingsView from './AccountSettingsView';
 
 const TIME_SLOTS = ['09:00', '09:30', '10:00', '10:30', '11:00', '11:30', '14:00', '14:30', '15:00', '15:30'];
 
@@ -97,8 +98,8 @@ Reply briefly and helpfully in English.`;
   );
 
   return (
-    <div className="h-full flex flex-col overflow-hidden">
-      <div className="flex-1 overflow-y-auto p-4 md:p-6 pb-24 min-h-0">
+    <div className="min-h-full md:h-full flex flex-col overflow-visible md:overflow-hidden">
+      <div className="flex-1 overflow-visible md:overflow-y-auto p-4 md:p-6 pb-24 min-h-0">
 
         {/* ── Home ── */}
         {tab === 'home' && (
@@ -163,8 +164,8 @@ Reply briefly and helpfully in English.`;
               </h3>
               <p className="text-sm text-slate-400 font-bold mt-1">{t('patientAISub')}</p>
             </Card>
-            <Card className="flex-1 flex flex-col gap-3 overflow-hidden min-h-[400px]">
-              <div className="flex-1 overflow-y-auto flex flex-col gap-3 pe-1">
+            <Card className="flex-1 flex flex-col gap-3 overflow-visible md:overflow-hidden min-h-[400px]">
+              <div className="flex-1 overflow-visible md:overflow-y-auto flex flex-col gap-3 pe-1">
                 {messages.map((msg, i) => (
                   <div key={i} className={`flex gap-3 ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}>
                     {msg.role === 'assistant' && (
@@ -361,6 +362,13 @@ Reply briefly and helpfully in English.`;
             </div>
           </div>
         )}
+
+        {/* ── Account Settings ── */}
+        {tab === 'account' && (
+          <div className="max-w-2xl mx-auto animate-in slide-in-from-bottom-4">
+            <AccountSettingsView />
+          </div>
+        )}
       </div>
 
       {/* Bottom Nav */}
@@ -370,6 +378,7 @@ Reply briefly and helpfully in English.`;
           {tabBtn('ai',     Bot,     isAr ? 'طبيب AI'  : 'AI Doctor')}
           {tabBtn('book',   Calendar,isAr ? 'حجز'      : 'Book')}
           {tabBtn('alarms', Bell,    isAr ? 'منبه'      : 'Alarms')}
+          {tabBtn('account', Settings, isAr ? 'حسابي'    : 'Account')}
         </div>
       </div>
     </div>

@@ -1,12 +1,13 @@
 import { useState, useMemo } from 'react';
 import { 
   Building2, Users, User, Plus, Trash2, Edit3, Save, Lock, Shield, 
-  Search, CheckCircle, AlertCircle, Trash, Pill, RefreshCw
+  Search, CheckCircle, AlertCircle, Trash, Pill, RefreshCw, Settings
 } from 'lucide-react';
 import { useClinic } from '../contexts/ClinicContext';
 import { Card, InnerCard, Input, s, GlassModal } from '../components/shared';
 import { useToast } from '../hooks/useToast';
 import { SPECIALTIES } from '../constants';
+import AccountSettingsView from './AccountSettingsView';
 
 export default function AdminView() {
   const { 
@@ -20,7 +21,7 @@ export default function AdminView() {
   const toast = useToast();
   
   // Tab State synced with global activePage (fallback to 'organizations' if not matching admin pages)
-  const adminPages = ['organizations', 'users', 'patients', 'inventory', 'security'];
+  const adminPages = ['organizations', 'users', 'patients', 'inventory', 'security', 'account'];
   const activeTab = adminPages.includes(activePage) ? activePage : 'organizations';
   const setActiveTab = (tab) => {
     setActivePage(tab);
@@ -308,7 +309,7 @@ export default function AdminView() {
   }, [inventory, searchTerm]);
 
   return (
-    <div className="h-full flex flex-col p-4 md:p-6 gap-6 overflow-hidden">
+    <div className="min-h-full md:h-full flex flex-col p-4 md:p-6 gap-6 overflow-visible md:overflow-hidden">
       
       {/* Header and Quick Navigation */}
       <Card className="!p-4 shrink-0 flex flex-col md:flex-row items-center justify-between gap-4">
@@ -327,7 +328,8 @@ export default function AdminView() {
             { id: 'users', label: 'الحسابات', icon: Users },
             { id: 'patients', label: 'المرضى', icon: User },
             { id: 'inventory', label: 'الأدوية والمخازن', icon: Pill },
-            { id: 'security', label: 'الأمان', icon: Lock }
+            { id: 'security', label: 'الأمان', icon: Lock },
+            { id: 'account', label: 'إعدادات الحساب', icon: Settings }
           ].map(tab => (
             <button key={tab.id} onClick={() => { setActiveTab(tab.id); setSearchTerm(''); }}
               className={`px-4 py-2.5 rounded-xl text-sm font-black transition-all flex items-center gap-1.5 shrink-0 ${activeTab === tab.id ? 'bg-gradient-to-br from-slate-700 to-slate-800 text-cyan-400 shadow-inner border border-slate-600' : 'text-slate-400 hover:text-white'}`}>
@@ -337,11 +339,11 @@ export default function AdminView() {
           ))}
         </div>
       </Card>
-
-      <div className="flex-1 overflow-y-auto min-h-0 pe-1 pb-4 flex flex-col gap-6">
-
-        {/* Search input (Except on Security tab) */}
-        {activeTab !== 'security' && (
+ 
+      <div className="flex-1 overflow-visible md:overflow-y-auto min-h-0 pe-1 pb-4 flex flex-col gap-6">
+ 
+        {/* Search input (Except on Security and Account tabs) */}
+        {activeTab !== 'security' && activeTab !== 'account' && (
           <div className="max-w-xl">
             <Input placeholder={isAr ? 'البحث بالاسم أو التفاصيل...' : 'Search by name or details...'} icon={Search}
               value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
@@ -544,6 +546,13 @@ export default function AdminView() {
               {isAr ? 'حفظ كلمة المرور الجديدة' : 'Save Password'}
             </button>
           </Card>
+        )}
+
+        {/* ── Tab 6: Account Settings ── */}
+        {activeTab === 'account' && (
+          <div className="animate-in slide-in-from-bottom-4">
+            <AccountSettingsView />
+          </div>
         )}
 
       </div>
