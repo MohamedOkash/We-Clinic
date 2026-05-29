@@ -2,7 +2,7 @@ import { useState } from 'react';
 import {
   LogOut, Globe, Activity, Users, Package, ScanLine, User, LayoutDashboard,
   Building2, Sun, Moon, Sparkles, Pill, MessageSquare, FileText, Calendar,
-  UploadCloud, FolderOpen, Bot, Bell, AlertTriangle, Menu, X, UserPlus
+  UploadCloud, FolderOpen, Bot, Bell, AlertTriangle, Menu, X, UserPlus, Lock
 } from 'lucide-react';
 import { ClinicProvider, useClinic } from './contexts/ClinicContext';
 import { ToastContainer } from './hooks/useToast';
@@ -14,6 +14,7 @@ import PharmacyView     from './views/PharmacyView';
 import RadiologyView    from './views/RadiologyView';
 import PatientPortal    from './views/PatientPortal';
 import ManagerView      from './views/ManagerView';
+import AdminView        from './views/AdminView';
 
 // ─── Background ───────────────────────────────────────────────────────────────
 function Background() {
@@ -42,6 +43,7 @@ const ROLE_CONFIG = {
   radiology:    { icon: ScanLine,        colorFrom: 'from-purple-500', colorTo: 'to-violet-700'  },
   patient:      { icon: User,            colorFrom: 'from-cyan-500',   colorTo: 'to-blue-700'    },
   manager:      { icon: LayoutDashboard, colorFrom: 'from-slate-500',  colorTo: 'to-slate-700'   },
+  admin:        { icon: Building2,       colorFrom: 'from-cyan-500',   colorTo: 'to-blue-700'    },
 };
 
 const SIDEBAR_ITEMS = {
@@ -78,6 +80,13 @@ const SIDEBAR_ITEMS = {
     { page: 'dashboard',      label: 'Executive Dashboard', labelAr: 'لوحة تحكم المدير',      icon: LayoutDashboard },
     { page: 'patients',       label: 'Patients List',       labelAr: 'سجل المرضى الكلي',     icon: Users },
     { page: 'inventory',      label: 'Inventory Alerts',    labelAr: 'تنبيهات المخازن',      icon: AlertTriangle }
+  ],
+  admin: [
+    { page: 'organizations',  label: 'Facilities Manager',  labelAr: 'المنشآت والجهات',      icon: Building2 },
+    { page: 'users',          label: 'System Users',        labelAr: 'حسابات ومستخدمو النظام', icon: Users },
+    { page: 'patients',       label: 'Patients Registry',   labelAr: 'سجل المرضى الكلي',     icon: User },
+    { page: 'inventory',      label: 'Global Inventory',    labelAr: 'مستودع الأدوية العام', icon: Pill },
+    { page: 'security',       label: 'Security Settings',   labelAr: 'إعدادات الأمان',       icon: Lock }
   ]
 };
 
@@ -236,6 +245,7 @@ function RoleView() {
     case 'radiology':    return <RadiologyView />;
     case 'patient':      return <PatientPortal />;
     case 'manager':      return <ManagerView />;
+    case 'admin':        return <AdminView />;
     default:             return <DoctorWorkspace />;
   }
 }

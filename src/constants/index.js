@@ -5,7 +5,7 @@ export const translations = {
   en: {
     appTitle: 'Our Clinic 3D', receptionist: 'Receptionist', doctor: 'Doctor',
     pharmacy: 'Pharmacy', radiology: 'Radiology & Labs', patient: 'Patient',
-    manager: 'Manager', login: 'Login', emailOrPhone: 'Email or Phone Number',
+    manager: 'Manager', admin: 'System Admin', login: 'Login', emailOrPhone: 'Email or Phone Number',
     password: 'Password', signIn: 'Sign In', logout: 'Logout',
     enterCredentials: 'Enter your credentials to continue', signUp: 'Sign Up',
     selectRole: 'Select Role', selectSpecialty: 'Select Specialty',
@@ -67,7 +67,7 @@ export const translations = {
   ar: {
     appTitle: 'عيادتنا 3D', receptionist: 'الاستقبال', doctor: 'الطبيب',
     pharmacy: 'الصيدلية', radiology: 'الأشعة والتحاليل', patient: 'المريض',
-    manager: 'المدير', login: 'تسجيل الدخول', emailOrPhone: 'البريد أو رقم الهاتف',
+    manager: 'المدير', admin: 'المدير العام', login: 'تسجيل الدخول', emailOrPhone: 'البريد أو رقم الهاتف',
     password: 'كلمة المرور', signIn: 'دخول للنظام', logout: 'تسجيل الخروج',
     enterCredentials: 'أدخل بياناتك للوصول للنظام الثلاثي الأبعاد', signUp: 'إنشاء حساب',
     selectRole: 'اختر نوع الحساب', selectSpecialty: 'اختر التخصص الطبي',

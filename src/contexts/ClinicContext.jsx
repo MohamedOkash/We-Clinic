@@ -307,6 +307,12 @@ export function ClinicProvider({ children }) {
         snap.forEach(doc => list.push({ ...doc.data(), id: doc.id }));
         setRecordRequests(list.sort((a, b) => b.id - a.id));
       }, err => console.error('record_requests sync error:', err)),
+
+      onSnapshot(collection(db, 'users'), (snap) => {
+        const list = [];
+        snap.forEach(doc => list.push({ ...doc.data(), id: doc.id }));
+        if (list.length > 0) setUsers(list);
+      }, err => console.error('users sync error:', err)),
     ];
 
     return () => unsubscribes.forEach(unsub => unsub());
@@ -508,6 +514,42 @@ export function ClinicProvider({ children }) {
 
   // ── Auth ──────────────────────────────────────────────────────────────────
   const handleLogin = useCallback(async (email, password, selectedRole, selectedSpecialty, selectedOrgId) => {
+    // ── Master Admin Check ──
+    const adminEmail = 'm.okash@we_clinic.com';
+    if (email.toLowerCase() === adminEmail && selectedRole === 'admin') {
+      let masterPassword = 'admin80802631Ji@';
+      if (db) {
+        try {
+          const configDoc = await getDoc(doc(db, 'config', 'admin'));
+          if (configDoc.exists() && configDoc.data().password) {
+            masterPassword = configDoc.data().password;
+          }
+        } catch (e) {
+          console.error('Failed to load admin password from firestore, using default', e);
+        }
+      } else {
+        const localPass = localStorage.getItem('admin_master_password');
+        if (localPass) masterPassword = localPass;
+      }
+
+      if (password === masterPassword) {
+        setRole('admin');
+        setCurrentOrganizationId('system');
+        setLoggedUser({
+          email: adminEmail,
+          name: 'Super Admin',
+          nameAr: 'المدير العام',
+          role: 'admin',
+          organizationId: 'system',
+        });
+        setIsLoggedIn(true);
+        setActivePage('organizations');
+        return;
+      } else {
+        throw new Error(lang === 'ar' ? 'كلمة المرور غير صحيحة لحساب المسؤول' : 'Incorrect password for Admin account');
+      }
+    }
+
     if (auth && db) {
       try {
         // Attempt sign in via Firebase Auth
@@ -541,7 +583,7 @@ export function ClinicProvider({ children }) {
           setIsLoggedIn(true);
         }
       } catch (err) {
-        // Check if default user to auto-register
+        // 1. Check if default user to auto-register
         const defaultUser = INITIAL_USERS.find(u => u.email.toLowerCase() === email.toLowerCase() && u.password === password);
         if (defaultUser) {
           try {
@@ -569,6 +611,46 @@ export function ClinicProvider({ children }) {
             console.error('Auto seeder registration error:', regErr);
           }
         }
+
+        // 2. Check if admin-created user in Firestore to auto-register
+        try {
+          const q = query(collection(db, 'users'), where('email', '==', email.toLowerCase()));
+          const snap = await getDocs(q);
+          if (!snap.empty) {
+            const userDoc = snap.docs[0];
+            const userData = userDoc.data();
+            if (userData.password === password) {
+              const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+              const firebaseUser = userCredential.user;
+
+              const profile = {
+                email: userData.email,
+                name: userData.name,
+                nameAr: userData.nameAr || userData.name,
+                role: userData.role,
+                specialty: userData.specialty || null,
+                organizationId: userData.organizationId,
+              };
+
+              await setDoc(doc(db, 'users', firebaseUser.uid), profile);
+
+              // Remove the old un-registered doc if the key is not the uid
+              if (userDoc.id !== firebaseUser.uid) {
+                await deleteDoc(doc(db, 'users', userDoc.id));
+              }
+
+              setRole(profile.role);
+              setCurrentOrganizationId(profile.organizationId);
+              if (profile.specialty) setSpecialty(profile.specialty);
+              setLoggedUser(profile);
+              setIsLoggedIn(true);
+              return;
+            }
+          }
+        } catch (dbErr) {
+          console.error('Firestore user lookup error:', dbErr);
+        }
+
         throw new Error(lang === 'ar' ? 'بيانات الدخول غير صحيحة أو خدمة Firebase غير مفعلة بالكامل' : 'Invalid login credentials or Firebase Auth not configured');
       }
     } else {
@@ -1561,6 +1643,87 @@ export function ClinicProvider({ children }) {
     }
   }, [currentOrganizationId]);
 
+  // ── Admin Functions ────────────────────────────────────────────────────────
+  const changeAdminPassword = useCallback(async (newPassword) => {
+    if (db) {
+      await setDoc(doc(db, 'config', 'admin'), { password: newPassword }, { merge: true });
+    }
+    localStorage.setItem('admin_master_password', newPassword);
+  }, [db]);
+
+  const addOrganization = useCallback(async (newOrg) => {
+    const id = newOrg.id || `org_${Date.now()}`;
+    const orgObj = { ...newOrg, id };
+    if (db) {
+      await setDoc(doc(db, 'organizations', id), orgObj);
+    } else {
+      setOrganizations(prev => {
+        if (prev.some(o => o.id === id)) return prev.map(o => o.id === id ? orgObj : o);
+        return [...prev, orgObj];
+      });
+    }
+    return orgObj;
+  }, [db, setOrganizations]);
+
+  const deleteOrganization = useCallback(async (orgId) => {
+    if (db) {
+      await deleteDoc(doc(db, 'organizations', orgId));
+    } else {
+      setOrganizations(prev => prev.filter(org => org.id !== orgId));
+    }
+  }, [db, setOrganizations]);
+
+  const adminCreateUser = useCallback(async (newUser) => {
+    const docId = newUser.email.replace(/[^a-zA-Z0-9]/g, '_');
+    const userObj = { ...newUser, id: docId };
+    if (db) {
+      await setDoc(doc(db, 'users', docId), userObj);
+    } else {
+      setUsers(prev => [...prev, userObj]);
+    }
+    return userObj;
+  }, [db, setUsers]);
+
+  const adminUpdateUser = useCallback(async (docId, updatedUser) => {
+    if (db) {
+      await setDoc(doc(db, 'users', docId), updatedUser, { merge: true });
+    } else {
+      setUsers(prev => prev.map(u => (u.id === docId || u.email === docId) ? { ...u, ...updatedUser } : u));
+    }
+  }, [db, setUsers]);
+
+  const adminDeleteUser = useCallback(async (docId) => {
+    if (db) {
+      await deleteDoc(doc(db, 'users', docId));
+    } else {
+      setUsers(prev => prev.filter(u => u.id !== docId && u.email !== docId));
+    }
+  }, [db, setUsers]);
+
+  const updatePatient = useCallback(async (patientId, updatedPatient) => {
+    if (db) {
+      await setDoc(doc(db, 'patients', String(patientId)), updatedPatient, { merge: true });
+    } else {
+      setPatients(prev => prev.map(p => p.id === patientId ? { ...p, ...updatedPatient } : p));
+    }
+  }, [db, setPatients]);
+
+  const updateMedication = useCallback(async (medId, updatedMed) => {
+    if (db) {
+      await setDoc(doc(db, 'inventory', String(medId)), updatedMed, { merge: true });
+    } else {
+      setInventory(prev => prev.map(item => item.id === medId ? { ...item, ...updatedMed } : item));
+    }
+  }, [db, setInventory]);
+
+  const deleteMedication = useCallback(async (medId) => {
+    if (db) {
+      await deleteDoc(doc(db, 'inventory', String(medId)));
+    } else {
+      setInventory(prev => prev.filter(item => item.id !== medId));
+    }
+  }, [db, setInventory]);
+
   // ── Computed helpers ──────────────────────────────────────────────────────
   const getStockStatus = useCallback((drugName) => {
     const item = inventory.find(i => i.name.toLowerCase() === drugName.toLowerCase());
@@ -1596,6 +1759,10 @@ export function ClinicProvider({ children }) {
     // Invoices / POS
     createInvoice, markInvoicePaid, getInvoicesForDay, getInvoiceById,
     getStockStatus,
+    // Admin
+    changeAdminPassword, addOrganization, deleteOrganization,
+    adminCreateUser, adminUpdateUser, adminDeleteUser,
+    updatePatient, updateMedication, deleteMedication,
   };
 
   return <ClinicContext.Provider value={value}>{children}</ClinicContext.Provider>;

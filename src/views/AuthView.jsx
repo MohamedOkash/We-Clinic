@@ -126,9 +126,11 @@ export default function AuthView() {
               onChange={e => setSelectedRole(e.target.value)}
               dir={isAr ? 'rtl' : 'ltr'}
             >
-              {['patient','doctor','receptionist','pharmacy','radiology','manager'].map(r => (
-                <option key={r} value={r}>{t(r)}</option>
-              ))}
+              {['patient','doctor','receptionist','pharmacy','radiology','manager']
+                .concat(isLogin ? ['admin'] : [])
+                .map(r => (
+                  <option key={r} value={r}>{t(r)}</option>
+                ))}
             </select>
           </div>
           {selectedRole === 'doctor' && (
@@ -146,8 +148,8 @@ export default function AuthView() {
               </select>
             </div>
           )}
-          {isLogin && (
-            <div className="flex flex-col gap-2">
+          {isLogin && selectedRole !== 'admin' && (
+            <div className="flex flex-col gap-2 animate-in fade-in">
               <label className="text-sm font-bold text-slate-600 dark:text-slate-300 px-1">
                 {isAr ? 'اختر الجهة / العيادة' : 'Select Clinic / Pharmacy / Lab'}
               </label>
@@ -175,7 +177,14 @@ export default function AuthView() {
           <p className="text-sm text-slate-500 dark:text-slate-400 font-bold">
             {isLogin ? t('dontHaveAccount') : t('alreadyHaveAccount')}{' '}
             <button
-              onClick={() => { setIsLogin(!isLogin); setErrors({}); }}
+              onClick={() => {
+                const nextLogin = !isLogin;
+                setIsLogin(nextLogin);
+                setErrors({});
+                if (!nextLogin && selectedRole === 'admin') {
+                  setSelectedRole('doctor');
+                }
+              }}
               className="font-black text-cyan-600 dark:text-cyan-400 hover:text-cyan-500"
             >
               {isLogin ? t('signUp') : t('signIn')}
