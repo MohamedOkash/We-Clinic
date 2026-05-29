@@ -8,13 +8,13 @@
 
 | # | التحسين | التفاصيل |
 |---|---------|-----------|
-| 1 | **AI حقيقي (Claude API)** | الطبيب والمريض يتحدثون مع Claude فعلاً |
+| 1 | **AI حقيقي (Gemini API)** | الطبيب والمريض يتحدثون مع Gemini فعلاً |
 | 2 | **Search يعمل** | بحث حي في المرضى والمخزون والروشتات |
 | 3 | **Toast بدل alert()** | إشعارات أنيقة تظهر وتختفي |
 | 4 | **localStorage** | البيانات لا تُفقد عند Refresh |
 | 5 | **طباعة الروشتة** | زر Print يفتح روشتة رسمية جاهزة للطباعة |
 | 6 | **جرعة وتكرار الدواء** | كل دواء فيه Dosage + Frequency + Duration |
-| 7 | **فحص تفاعلات الأدوية** | Claude يفحص Drug-Drug Interactions |
+| 7 | **فحص تفاعلات الأدوية** | Gemini يفحص Drug-Drug Interactions |
 | 8 | **Manager Dashboard** | إحصائيات حقيقية من الـ state |
 | 9 | **اختيار المريض للأشعة** | الأشعة ترتبط بمريض معين |
 | 10 | **Context API** | بدل prop drilling — كود منظم ومقسّم |
@@ -37,12 +37,12 @@ npm install
 cp .env.example .env
 ```
 
-افتح ملف `.env` وضع مفتاح Claude API بتاعك:
+افتح ملف `.env` وضع مفتاح Gemini API بتاعك:
 ```
-VITE_ANTHROPIC_API_KEY=sk-ant-xxxxxxxxxxxxxx
+VITE_GEMINI_API_KEY=AIzaSyxxxxxxxxxxxxxxxxx
 ```
 
-احصل على المفتاح من: https://console.anthropic.com/
+احصل على المفتاح من: https://aistudio.google.com/apikey
 
 > **ملاحظة:** التطبيق يشتغل بدون مفتاح، لكن الـ AI سيُظهر رسالة تنبيه بدل الردود الحقيقية.
 
@@ -75,7 +75,7 @@ npm run dev
 
 ```
 src/
-├── constants/          # ترجمات، بيانات ابتدائية، دالة callClaude
+├── constants/          # ترجمات، بيانات ابتدائية، دالة callGemini / askGemini
 ├── contexts/           # ClinicContext — الـ state المشترك
 ├── hooks/              # useToast — نظام الإشعارات
 ├── components/shared/  # Input, Card, Avatar, GlassModal, printPrescription

@@ -3,7 +3,7 @@ import { Bot, Send, Bell, Calendar, FileText, Home, Pill, Clock, Plus, Trash2, B
 import { useClinic } from '../contexts/ClinicContext';
 import { Card, InnerCard, Avatar, Input, s } from '../components/shared';
 import { useToast } from '../hooks/useToast';
-import { callGemini } from '../constants';
+import { callGemini } from '../constants/gemini';
 import AccountSettingsView from './AccountSettingsView';
 
 const TIME_SLOTS = ['09:00', '09:30', '10:00', '10:30', '11:00', '11:30', '14:00', '14:30', '15:00', '15:30'];
@@ -47,33 +47,28 @@ export default function PatientPortal() {
     if (!input.trim() || isTyping) return;
     const userMsg = input.trim();
     setInput('');
-    setMessages(prev => [...prev, { role: 'user', text: userMsg }]);
+    const updatedMessages = [...messages, { role: 'user', text: userMsg }];
+    setMessages(updatedMessages);
     setIsTyping(true);
 
+    const systemPrompt = isAr
+      ? `أنت مساعد طبي ذكاء اصطناعي تتحدث مع مريض. قدم معلومات طبية عامة مفيدة وآمنة، وذكّر دائماً بضرورة مراجعة الطبيب للتشخيص الدقيق. كن ودوداً ومطمئناً. رد بالعربية بشكل موجز ومفيد.`
+      : `You are a medical AI assistant talking to a patient. Provide helpful, safe general medical information. Always remind them to see a doctor for proper diagnosis. Be friendly and reassuring. Reply briefly and helpfully in English.`;
+
     try {
-      const history = messages.slice(-6).map(m => `${m.role === 'user' ? 'Patient' : 'Assistant'}: ${m.text}`).join('\n');
-      const prompt = isAr
-        ? `أنت مساعد طبي ذكاء اصطناعي تتحدث مع مريض. قدم معلومات طبية عامة مفيدة وآمنة، وذكّر دائماً بضرورة مراجعة الطبيب للتشخيص الدقيق. كن ودوداً ومطمئناً.
+      const formattedHistory = updatedMessages.map(m => ({
+        role: m.role === 'assistant' ? 'assistant' : 'user',
+        content: m.text
+      }));
 
-سجل المحادثة:
-${history}
-
-سؤال المريض: ${userMsg}
-
-رد بالعربية بشكل موجز ومفيد.`
-        : `You are a medical AI assistant talking to a patient. Provide helpful, safe general medical information. Always remind them to see a doctor for proper diagnosis. Be friendly and reassuring.
-
-Conversation history:
-${history}
-
-Patient says: ${userMsg}
-
-Reply briefly and helpfully in English.`;
-
-      const reply = await callGemini(prompt, isAr ? 'ar' : 'en');
+      const reply = await callGemini(formattedHistory, systemPrompt);
       setMessages(prev => [...prev, { role: 'assistant', text: reply }]);
-    } catch {
-      setMessages(prev => [...prev, { role: 'assistant', text: isAr ? 'عذراً، حدث خطأ. حاول مرة أخرى.' : 'Sorry, something went wrong. Please try again.' }]);
+    } catch (error) {
+      console.error(error);
+      const errMsg = isAr
+        ? "⚠️ خطأ في الاتصال بالذكاء الاصطناعي. تحقق من مفتاح API."
+        : "⚠️ AI connection error. Check your API key.";
+      setMessages(prev => [...prev, { role: 'assistant', text: errMsg }]);
     } finally {
       setIsTyping(false);
     }

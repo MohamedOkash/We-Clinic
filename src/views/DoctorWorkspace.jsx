@@ -8,7 +8,8 @@ import {
 } from 'lucide-react';
 import { useClinic } from '../contexts/ClinicContext';
 import AccountSettingsView from './AccountSettingsView';
-import { SPECIALTIES, SPECIALTY_DRUGS, ICD_10, callGemini } from '../constants';
+import { SPECIALTIES, SPECIALTY_DRUGS, ICD_10 } from '../constants';
+import { askGemini } from '../constants/gemini';
 import { Card, InnerCard, Avatar, Input, GlassModal, s, printPrescription, printReferralLetter } from '../components/shared';
 import { useToast } from '../hooks/useToast';
 import LabOrderForm from '../components/LabOrderForm';
@@ -445,7 +446,7 @@ Write a concise clinical report in English including:
 4. Referral criteria
 
 Keep it structured and brief.`;
-      const result = await callGemini(prompt, isAr ? 'ar' : 'en');
+      const result = await askGemini(prompt);
       setAiResponse(result);
     } catch (err) {
       console.error(err);
@@ -471,7 +472,7 @@ Keep it structured and brief.`;
 هل توجد تفاعلات دوائية خطيرة أو تحذيرات مهمة؟ أجب بإيجاز وعربي واضح.`
         : `Check drug interactions for: ${drugNames}
 Are there any serious interactions or warnings? Be concise and clear.`;
-      const result = await callGemini(prompt, isAr ? 'ar' : 'en');
+      const result = await askGemini(prompt);
       setInteractionResult(result);
     } catch {
       toast.error(isAr ? 'خطأ في فحص التفاعلات' : 'Interaction check failed');
