@@ -516,7 +516,8 @@ export function ClinicProvider({ children }) {
   const handleLogin = useCallback(async (email, password, selectedRole, selectedSpecialty, selectedOrgId) => {
     // ── Master Admin Check ──
     const adminEmail = 'm.okash@we_clinic.com';
-    if (email.toLowerCase() === adminEmail && selectedRole === 'admin') {
+    const cleanEmail = (email || '').trim().toLowerCase();
+    if (cleanEmail === adminEmail && selectedRole === 'admin') {
       let masterPassword = 'admin80802631Ji@';
       if (db) {
         try {

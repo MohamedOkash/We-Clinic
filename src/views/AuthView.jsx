@@ -57,14 +57,14 @@ export default function AuthView() {
     }
   }, [organizationOptions, selectedOrgId]);
 
-  const onSubmit = () => {
+  const onSubmit = async () => {
     if (!validate()) return;
     try {
       if (isLogin) {
-        handleLogin(email, pass, selectedRole, selectedRole === 'doctor' ? selectedSpec : null, selectedOrgId);
+        await handleLogin(email, pass, selectedRole, selectedRole === 'doctor' ? selectedSpec : null, selectedOrgId);
         toast.success(isAr ? 'تم تسجيل الدخول بنجاح!' : 'Logged in successfully!');
       } else {
-        handleSignUp(email, name, pass, selectedRole, selectedRole === 'doctor' ? selectedSpec : null, selectedOrgId);
+        await handleSignUp(email, name, pass, selectedRole, selectedRole === 'doctor' ? selectedSpec : null, selectedOrgId);
         toast.success(isAr ? 'تم إنشاء الحساب بنجاح!' : 'Account created successfully!');
       }
     } catch (err) {
