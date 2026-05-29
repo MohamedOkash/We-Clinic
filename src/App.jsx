@@ -5,7 +5,8 @@ import {
   UploadCloud, FolderOpen, Bot, Bell, AlertTriangle, Menu, X, UserPlus, Lock
 } from 'lucide-react';
 import { ClinicProvider, useClinic } from './contexts/ClinicContext';
-import { ToastContainer } from './hooks/useToast';
+import { ToastContainer, useToast } from './hooks/useToast';
+import { GlassModal, Input, s } from './components/shared';
 import NotificationBell from './components/NotificationCenter';
 import AuthView         from './views/AuthView';
 import ReceptionistView from './views/ReceptionistView';
@@ -91,7 +92,7 @@ const SIDEBAR_ITEMS = {
 };
 
 // ─── Sidebar Component ─────────────────────────────────────────────────────────
-function Sidebar() {
+function Sidebar({ onOpenSettings }) {
   const { role, activePage, setActivePage, isAr, t, loggedUser, handleLogout, theme, setTheme, lang, setLang, isMenuOpen, setIsMenuOpen } = useClinic();
   const cfg = ROLE_CONFIG[role] || ROLE_CONFIG['doctor'];
   const isDark = theme !== 'light';
@@ -129,8 +130,8 @@ function Sidebar() {
         </div>
 
         {/* User profile section */}
-        <div className="p-5 border-b border-emerald-500/10 dark:border-emerald-400/10 flex flex-col gap-3">
-          <div className="flex items-center gap-3">
+        <div className="p-5 border-b border-emerald-500/10 dark:border-emerald-400/10 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3 min-w-0">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-700 text-white keep-text-white flex items-center justify-center font-black border border-emerald-300/20 shadow-sm shrink-0">
               {(loggedUser?.name || '?').charAt(0).toUpperCase()}
             </div>
@@ -139,6 +140,15 @@ function Sidebar() {
               <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-widest">{t(role)}</span>
             </div>
           </div>
+          {role !== 'admin' && (
+            <button 
+              onClick={onOpenSettings}
+              className="p-2 text-emerald-700 hover:text-emerald-950 dark:text-emerald-400 dark:hover:text-emerald-50 rounded-xl bg-emerald-500/5 hover:bg-emerald-500/10 border border-emerald-500/10 dark:border-white/5 transition-all shrink-0 animate-pulse"
+              title={isAr ? 'إعدادات الحساب' : 'Account Settings'}
+            >
+              <Lock className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+            </button>
+          )}
         </div>
 
         {/* Navigation links */}
@@ -252,7 +262,37 @@ function RoleView() {
 
 // ─── Inner App ────────────────────────────────────────────────────────────────
 function InnerApp() {
-  const { isLoggedIn } = useClinic();
+  const { isLoggedIn, changeUserPassword, isAr } = useClinic();
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const toast = useToast();
+
+  const handlePasswordChange = async () => {
+    if (!currentPassword) {
+      toast.error(isAr ? 'يرجى إدخال كلمة المرور الحالية' : 'Please enter current password');
+      return;
+    }
+    if (!newPassword) {
+      toast.error(isAr ? 'يرجى إدخال كلمة المرور الجديدة' : 'Please enter new password');
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      toast.error(isAr ? 'كلمتا المرور غير متطابقتين' : 'Passwords do not match');
+      return;
+    }
+    try {
+      await changeUserPassword(currentPassword, newPassword);
+      toast.success(isAr ? 'تم تغيير كلمة المرور بنجاح!' : 'Password changed successfully!');
+      setIsSettingsOpen(false);
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+    } catch (err) {
+      toast.error(err.message || (isAr ? 'خطأ أثناء تغيير كلمة المرور' : 'Error changing password'));
+    }
+  };
 
   if (!isLoggedIn) {
     return (
@@ -266,7 +306,7 @@ function InnerApp() {
   return (
     <div className="h-screen w-screen flex overflow-hidden relative">
       <Background />
-      <Sidebar />
+      <Sidebar onOpenSettings={() => setIsSettingsOpen(true)} />
       <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
         <TopNav />
         <main className="flex-1 overflow-hidden p-3 md:p-4">
@@ -274,6 +314,48 @@ function InnerApp() {
         </main>
       </div>
       <ToastContainer />
+
+      {/* Account Settings / Password Reset Modal for clinical roles */}
+      <GlassModal 
+        isOpen={isSettingsOpen} 
+        onClose={() => {
+          setIsSettingsOpen(false);
+          setCurrentPassword('');
+          setNewPassword('');
+          setConfirmPassword('');
+        }}
+        title={isAr ? 'إعدادات الحساب وتغيير كلمة المرور' : 'Account Settings & Change Password'}
+      >
+        <div className="flex flex-col gap-4">
+          <Input 
+            label={isAr ? 'كلمة المرور الحالية' : 'Current Password'} 
+            type="password" 
+            placeholder="••••••••"
+            value={currentPassword} 
+            onChange={e => setCurrentPassword(e.target.value)} 
+          />
+          <Input 
+            label={isAr ? 'كلمة المرور الجديدة' : 'New Password'} 
+            type="password" 
+            placeholder="••••••••"
+            value={newPassword} 
+            onChange={e => setNewPassword(e.target.value)} 
+          />
+          <Input 
+            label={isAr ? 'تأكيد كلمة المرور الجديدة' : 'Confirm New Password'} 
+            type="password" 
+            placeholder="••••••••"
+            value={confirmPassword} 
+            onChange={e => setConfirmPassword(e.target.value)} 
+          />
+          <button 
+            onClick={handlePasswordChange} 
+            className={`${s.btnPrimary} w-full mt-4`}
+          >
+            <Lock className="w-5 h-5" /> {isAr ? 'تحديث كلمة المرور' : 'Update Password'}
+          </button>
+        </div>
+      </GlassModal>
     </div>
   );
 }

@@ -11,15 +11,20 @@ import { SPECIALTIES } from '../constants';
 export default function AdminView() {
   const { 
     t, isAr, organizations, allUsers, patients, inventory,
-    changeAdminPassword, addOrganization, deleteOrganization,
+    changeAdminPassword, changeUserPassword, addOrganization, deleteOrganization,
     adminCreateUser, adminUpdateUser, adminDeleteUser,
-    updatePatient, updateMedication, deleteMedication
+    updatePatient, updateMedication, deleteMedication,
+    addMedication, activePage, setActivePage
   } = useClinic();
 
   const toast = useToast();
   
-  // Tab State
-  const [activeTab, setActiveTab] = useState('organizations');
+  // Tab State synced with global activePage (fallback to 'organizations' if not matching admin pages)
+  const adminPages = ['organizations', 'users', 'patients', 'inventory', 'security'];
+  const activeTab = adminPages.includes(activePage) ? activePage : 'organizations';
+  const setActiveTab = (tab) => {
+    setActivePage(tab);
+  };
   
   // Search State
   const [searchTerm, setSearchTerm] = useState('');
@@ -37,6 +42,7 @@ export default function AdminView() {
   const [selectedMed, setSelectedMed] = useState(null);
 
   // Security password state
+  const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
 
@@ -203,9 +209,21 @@ export default function AdminView() {
   };
 
   // --- Handlers (Inventory) ---
-  const handleOpenMedModal = (med) => {
-    setSelectedMed(med);
-    setMedForm({ ...med });
+  const handleOpenMedModal = (med = null) => {
+    if (med) {
+      setSelectedMed(med);
+      setMedForm({ ...med });
+    } else {
+      setSelectedMed(null);
+      const defaultPharmacy = organizations.find(org => org.type === 'pharmacy')?.id || '';
+      setMedForm({
+        name: '',
+        description: '',
+        price: 0,
+        stock: 0,
+        organizationId: defaultPharmacy
+      });
+    }
     setIsMedModalOpen(true);
   };
 
@@ -214,12 +232,21 @@ export default function AdminView() {
       toast.error(isAr ? 'بيانات الدواء غير صالحة' : 'Invalid medicine details');
       return;
     }
+    if (!medForm.organizationId) {
+      toast.error(isAr ? 'يرجى اختيار الصيدلية أولاً' : 'Please assign a pharmacy');
+      return;
+    }
     try {
-      await updateMedication(selectedMed.id, medForm);
-      toast.success(isAr ? 'تم تعديل صنف الدواء بنجاح!' : 'Medication updated successfully!');
+      if (selectedMed) {
+        await updateMedication(selectedMed.id, medForm);
+        toast.success(isAr ? 'تم تعديل صنف الدواء بنجاح!' : 'Medication updated successfully!');
+      } else {
+        await addMedication(medForm);
+        toast.success(isAr ? 'تم إضافة الدواء بنجاح!' : 'Medication added successfully!');
+      }
       setIsMedModalOpen(false);
     } catch (err) {
-      toast.error('Error updating medication');
+      toast.error(selectedMed ? 'Error updating medication' : 'Error adding medication');
     }
   };
 
@@ -236,6 +263,10 @@ export default function AdminView() {
 
   // --- Handler (Change Master Admin Password) ---
   const handleSavePassword = async () => {
+    if (!currentPassword) {
+      toast.error(isAr ? 'أدخل كلمة المرور الحالية' : 'Enter current password');
+      return;
+    }
     if (!newPassword) {
       toast.error(isAr ? 'أدخل كلمة المرور الجديدة' : 'Enter new password');
       return;
@@ -245,12 +276,13 @@ export default function AdminView() {
       return;
     }
     try {
-      await changeAdminPassword(newPassword);
-      toast.success(isAr ? 'تم تغيير كلمة المرور الرئيسية للأدمن بنجاح سحابياً ومحلياً!' : 'Master Admin password updated successfully!');
+      await changeUserPassword(currentPassword, newPassword);
+      toast.success(isAr ? 'تم تغيير كلمة المرور بنجاح!' : 'Password updated successfully!');
+      setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');
     } catch (err) {
-      toast.error('Error changing password');
+      toast.error(err.message || (isAr ? 'خطأ في تغيير كلمة المرور' : 'Error changing password'));
     }
   };
 
@@ -441,9 +473,17 @@ export default function AdminView() {
         {/* ── Tab 4: Inventory ── */}
         {activeTab === 'inventory' && (
           <div className="flex flex-col gap-4 animate-in slide-in-from-bottom-4">
-            <h3 className="font-black text-xl text-white flex items-center gap-2">
-              <Pill className="w-5 h-5 text-cyan-400" /> {isAr ? 'تعديل وتصحيح مستودع الأدوية العام' : 'Global Pharmacy Medication Manager'} ({inventory.length})
-            </h3>
+            <div className="flex justify-between items-center gap-4">
+              <h3 className="font-black text-xl text-white flex items-center gap-2">
+                <Pill className="w-5 h-5 text-cyan-400" /> {isAr ? 'تعديل وتصحيح مستودع الأدوية العام' : 'Global Pharmacy Medication Manager'} ({inventory.length})
+              </h3>
+              <button 
+                onClick={() => handleOpenMedModal(null)}
+                className={`${s.btnPrimary} !h-10 !px-4 text-sm`}
+              >
+                <Plus className="w-4 h-4" /> {isAr ? 'إضافة دواء جديد' : 'Add Medication'}
+              </button>
+            </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {filteredMeds.map(med => {
@@ -489,6 +529,9 @@ export default function AdminView() {
             </div>
 
             <div className="flex flex-col gap-4">
+              <Input label={isAr ? 'كلمة المرور الحالية' : 'Current Password'} type="password" placeholder="••••••••"
+                value={currentPassword} onChange={e => setCurrentPassword(e.target.value)} />
+
               <Input label={isAr ? 'كلمة المرور الجديدة' : 'New Password'} type="password" placeholder="••••••••"
                 value={newPassword} onChange={e => setNewPassword(e.target.value)} />
               
@@ -629,7 +672,7 @@ export default function AdminView() {
       </GlassModal>
 
       {/* Medication Modal */}
-      <GlassModal isOpen={isMedModalOpen} onClose={() => setIsMedModalOpen(false)} title={isAr ? 'تعديل صنف الدواء' : 'Edit Medication details'}>
+      <GlassModal isOpen={isMedModalOpen} onClose={() => setIsMedModalOpen(false)} title={selectedMed ? (isAr ? 'تعديل صنف الدواء' : 'Edit Medication details') : (isAr ? 'إضافة دواء جديد' : 'Add New Medication')}>
         <div className="flex flex-col gap-4">
           <Input label={isAr ? 'اسم الدواء (العام)' : 'Medicine Name'} value={medForm.name} onChange={e => setMedForm({ ...medForm, name: e.target.value })} />
           <Input label={isAr ? 'الوصف السريري' : 'Description'} value={medForm.description} onChange={e => setMedForm({ ...medForm, description: e.target.value })} />
@@ -651,7 +694,7 @@ export default function AdminView() {
           </div>
 
           <button onClick={handleSaveMed} className={`${s.btnPrimary} w-full mt-4`}>
-            <Save className="w-5 h-5" /> {isAr ? 'حفظ التعديلات' : 'Save Changes'}
+            <Save className="w-5 h-5" /> {selectedMed ? (isAr ? 'حفظ التعديلات' : 'Save Changes') : (isAr ? 'إضافة الدواء' : 'Add Medication')}
           </button>
         </div>
       </GlassModal>

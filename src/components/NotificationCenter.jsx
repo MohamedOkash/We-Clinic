@@ -3,7 +3,7 @@ import { Bell, X, Check, AlertCircle, CheckCircle } from 'lucide-react';
 import { useClinic } from '../contexts/ClinicContext';
 
 export function NotificationBell() {
-  const { notifications, markNotificationAsRead, getUnreadCount, isAr } = useClinic();
+  const { notifications, markNotificationAsRead, markAllNotificationsAsRead, getUnreadCount, isAr } = useClinic();
   const [showPanel, setShowPanel] = useState(false);
   const unreadCount = getUnreadCount();
 
@@ -12,11 +12,11 @@ export function NotificationBell() {
       {/* Bell Icon */}
       <button
         onClick={() => setShowPanel(!showPanel)}
-        className="relative p-2 text-gray-300 hover:text-white transition-colors"
+        className="relative p-2 text-slate-400 hover:text-white transition-colors hover:scale-105 active:scale-95"
       >
         <Bell className="w-5 h-5" />
         {unreadCount > 0 && (
-          <span className="absolute top-0 right-0 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center animate-pulse">
+          <span className="absolute top-0 right-0 w-5 h-5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center animate-pulse">
             {unreadCount > 9 ? '9+' : unreadCount}
           </span>
         )}
@@ -25,16 +25,33 @@ export function NotificationBell() {
       {/* Notification Panel */}
       {showPanel && (
         <div
-          className={`absolute ${isAr ? 'right-0' : 'left-0'} top-12 w-96 max-h-96 overflow-y-auto bg-slate-900 border border-cyan-500/20 rounded-lg shadow-2xl z-50`}
+          className={`absolute ${isAr ? 'left-0' : 'right-0'} top-12 w-80 sm:w-96 max-h-96 overflow-y-auto bg-slate-950/95 backdrop-blur-xl border border-cyan-500/20 rounded-2xl shadow-2xl z-50`}
         >
           {/* Header */}
-          <div className="sticky top-0 bg-slate-800 border-b border-cyan-500/20 p-3 flex items-center justify-between">
-            <span className="text-white font-semibold text-sm">
+          <div className="sticky top-0 bg-slate-900 border-b border-cyan-500/10 p-3.5 flex items-center justify-between gap-2">
+            <span className="text-white font-black text-sm flex items-center gap-1.5">
+              <Bell className="w-4 h-4 text-cyan-400" />
               {isAr ? 'الإشعارات' : 'Notifications'}
+              {unreadCount > 0 && (
+                <span className="text-[10px] bg-red-500 text-white font-bold px-1.5 py-0.5 rounded-full shrink-0">
+                  {unreadCount}
+                </span>
+              )}
             </span>
-            <button onClick={() => setShowPanel(false)} className="text-gray-400 hover:text-white">
-              <X className="w-4 h-4" />
-            </button>
+            <div className="flex items-center gap-2">
+              {unreadCount > 0 && (
+                <button 
+                  onClick={markAllNotificationsAsRead}
+                  className="text-[10px] sm:text-xs font-black text-cyan-400 hover:text-cyan-300 transition-colors flex items-center gap-1 bg-cyan-400/10 hover:bg-cyan-400/20 px-2 py-1 rounded-lg shrink-0"
+                >
+                  <Check className="w-3.5 h-3.5" />
+                  {isAr ? 'تحديد الكل كمقروء' : 'Mark all read'}
+                </button>
+              )}
+              <button onClick={() => setShowPanel(false)} className="text-slate-400 hover:text-white p-1 hover:bg-white/5 rounded-lg transition-colors shrink-0">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
           </div>
 
           {/* Notifications List */}

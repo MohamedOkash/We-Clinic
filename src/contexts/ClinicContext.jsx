@@ -11,7 +11,8 @@ import {
   signInWithEmailAndPassword, 
   createUserWithEmailAndPassword, 
   signOut,
-  onAuthStateChanged
+  onAuthStateChanged,
+  updatePassword
 } from 'firebase/auth';
 import { 
   collection, 
@@ -421,6 +422,26 @@ export function ClinicProvider({ children }) {
 
   const scopedData = useMemo(() => {
     const orgId = currentOrganization?.id || DEFAULT_CLINIC_ORG_ID;
+
+    if (role === 'admin') {
+      const allMedicalRecordsScoped = Object.fromEntries(
+        Object.entries(allMedicalRecords || {}).map(([patientId, record]) => [patientId, scopeItem(record, DEFAULT_CLINIC_ORG_ID)])
+      );
+      return {
+        patients: allPatients.map(item => scopeItem(item, DEFAULT_CLINIC_ORG_ID)),
+        queue: allQueue.map(item => scopeItem(item, DEFAULT_CLINIC_ORG_ID)),
+        prescriptions: allPrescriptions.map(scopePrescription),
+        inventory: allInventory.map(item => scopeItem(item, DEFAULT_PHARMACY_ORG_ID)),
+        inquiries: allInquiries.map(scopeInquiry),
+        scans: allScans.map(scopeScan),
+        labOrders: allLabOrders.map(scopeLabOrder),
+        notifications: allNotifications.map(scopeNotification).filter(item => item.recipient === role),
+        medicalRecords: allMedicalRecordsScoped,
+        appointments: allAppointments.map(item => scopeItem(item, DEFAULT_CLINIC_ORG_ID)),
+        invoices: allInvoices.map(scopeInvoice),
+      };
+    }
+
     const scopedMedicalRecords = Object.fromEntries(
       Object.entries(allMedicalRecords || {})
         .map(([patientId, record]) => [patientId, scopeItem(record, DEFAULT_CLINIC_ORG_ID)])
@@ -469,25 +490,22 @@ export function ClinicProvider({ children }) {
   }, [currentOrganizationId, setNotifications]);
 
   const markNotificationAsRead = useCallback((id) => {
+    setNotifications(prev => prev.map(n =>
+      n.id === id ? { ...n, read: true } : n
+    ));
     if (db) {
       updateDoc(doc(db, 'notifications', String(id)), { read: true }).catch(e => console.error(e));
-    } else {
-      setNotifications(prev => prev.map(n =>
-        n.id === id ? { ...n, read: true } : n
-      ));
     }
-  }, [setNotifications]);
+  }, [db, setNotifications]);
 
   const markAllNotificationsAsRead = useCallback(() => {
+    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
     if (db) {
-      // Loop over unread and mark read
       notifications.filter(n => !n.read).forEach(n => {
         updateDoc(doc(db, 'notifications', String(n.id)), { read: true }).catch(e => console.error(e));
       });
-    } else {
-      setNotifications(prev => prev.map(n => ({ ...n, read: true })));
     }
-  }, [notifications, setNotifications]);
+  }, [db, notifications, setNotifications]);
 
   const getUnreadCount = useCallback(() => notifications.filter(n => !n.read).length, [notifications]);
 
@@ -1124,13 +1142,13 @@ export function ClinicProvider({ children }) {
 
   const addMedication = useCallback((newMed) => {
     const medId = db ? doc(collection(db, 'inventory')).id : String(Date.now());
-    const medObj = { ...newMed, id: medId, organizationId: currentOrganizationId };
+    const medObj = { ...newMed, id: medId, organizationId: newMed.organizationId || currentOrganizationId };
     if (db) {
       setDoc(doc(db, 'inventory', medId), medObj).catch(e => console.error(e));
     } else {
       setInventory(prev => [...prev, medObj]);
     }
-  }, [currentOrganizationId]);
+  }, [db, currentOrganizationId, setInventory]);
 
   // ── Scans ─────────────────────────────────────────────────────────────────
   const uploadScan = useCallback((newScan) => {
@@ -1652,6 +1670,55 @@ export function ClinicProvider({ children }) {
     localStorage.setItem('admin_master_password', newPassword);
   }, [db]);
 
+  const changeUserPassword = useCallback(async (currentPassword, newPassword) => {
+    // 1. If Admin
+    if (role === 'admin') {
+      const adminEmail = 'm.okash@we_clinic.com';
+      let masterPassword = 'admin80802631Ji@';
+      if (db) {
+        const configDoc = await getDoc(doc(db, 'config', 'admin'));
+        if (configDoc.exists() && configDoc.data().password) {
+          masterPassword = configDoc.data().password;
+        }
+      } else {
+        const localPass = localStorage.getItem('admin_master_password');
+        if (localPass) masterPassword = localPass;
+      }
+
+      if (currentPassword !== masterPassword) {
+        throw new Error(lang === 'ar' ? 'كلمة المرور الحالية غير صحيحة لحساب المسؤول' : 'Current password is incorrect for Admin account');
+      }
+
+      await changeAdminPassword(newPassword);
+      return;
+    }
+
+    // 2. If regular user
+    if (loggedUser && loggedUser.password && currentPassword !== loggedUser.password) {
+      throw new Error(lang === 'ar' ? 'كلمة المرور الحالية غير صحيحة' : 'Current password is incorrect');
+    }
+
+    if (auth && auth.currentUser) {
+      try {
+        await updatePassword(auth.currentUser, newPassword);
+      } catch (err) {
+        if (err.code === 'auth/requires-recent-login') {
+          throw new Error(lang === 'ar' ? 'لتغيير كلمة المرور يرجى تسجيل الخروج والدخول مجدداً لأسباب أمنية' : 'Please re-login to change password for security reasons');
+        }
+        throw err;
+      }
+      
+      // Update in Firestore
+      await setDoc(doc(db, 'users', auth.currentUser.uid), { password: newPassword }, { merge: true });
+    } else {
+      // Local fallback
+      setUsers(prev => prev.map(u => u.email === loggedUser.email ? { ...u, password: newPassword } : u));
+    }
+
+    // Update locally loggedUser profile
+    setLoggedUser(prev => prev ? { ...prev, password: newPassword } : null);
+  }, [role, db, auth, loggedUser, lang, changeAdminPassword, setUsers, setLoggedUser]);
+
   const addOrganization = useCallback(async (newOrg) => {
     const id = newOrg.id || `org_${Date.now()}`;
     const orgObj = { ...newOrg, id };
@@ -1761,7 +1828,7 @@ export function ClinicProvider({ children }) {
     createInvoice, markInvoicePaid, getInvoicesForDay, getInvoiceById,
     getStockStatus,
     // Admin
-    changeAdminPassword, addOrganization, deleteOrganization,
+    changeAdminPassword, changeUserPassword, addOrganization, deleteOrganization,
     adminCreateUser, adminUpdateUser, adminDeleteUser,
     updatePatient, updateMedication, deleteMedication,
   };
