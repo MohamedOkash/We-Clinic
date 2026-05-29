@@ -1,0 +1,286 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─── Base Reset ──────────────────────────────────────────────────── */
+* { box-sizing: border-box; }
+
+html {
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+:root {
+  --bg-main: #f0f7f4;              /* Light mint green base */
+  --text-primary: #062f22;         /* Deep forest green */
+  --text-secondary: #0f513d;       /* Deep emerald green */
+  --text-muted: #198754;           /* Medium forest green */
+  --border-color: rgba(16, 185, 129, 0.12);
+  --border-color-inner: rgba(16, 185, 129, 0.08);
+  --shadow-color: rgba(16, 185, 129, 0.04);
+}
+
+.dark {
+  --bg-main: #030806;              /* Dark forest green base */
+  --text-primary: #e6fcf5;         /* Light mint tint */
+  --text-secondary: #a3eed2;       /* Light emerald */
+  --text-muted: #34d399;           /* Mint */
+  --border-color: rgba(16, 185, 129, 0.15);
+  --border-color-inner: rgba(16, 185, 129, 0.08);
+  --shadow-color: rgba(0, 0, 0, 0.7);
+}
+
+body {
+  font-family: 'Inter', 'Cairo', system-ui, -apple-system, sans-serif;
+  background: var(--bg-main);
+  color: var(--text-primary);
+  overflow: hidden;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* ─── Theme-aware Overrides for Light Mode ─── */
+.light .text-white {
+  color: #062f22 !important; /* Deep forest green */
+}
+.light .text-slate-100 {
+  color: #0c4a35 !important; /* Dark green-800 */
+}
+.light .text-slate-200 {
+  color: #0f513d !important; /* Dark green-700 */
+}
+.light .text-slate-300 {
+  color: #198754 !important; /* Green-600 */
+}
+.light .text-slate-400 {
+  color: #20c997 !important; /* Medium green/teal */
+}
+.light .text-slate-500 {
+  color: #48c78e !important; /* Light green */
+}
+
+/* Exclude colored elements so their text stays readable (white) */
+.light .bg-gradient-to-br .text-white,
+.light .bg-gradient-to-r .text-white,
+.light .bg-cyan-500 .text-white,
+.light .bg-cyan-600 .text-white,
+.light .bg-blue-600 .text-white,
+.light .bg-red-500 .text-white,
+.light .bg-red-600 .text-white,
+.light .bg-green-600 .text-white,
+.light .bg-emerald-500 .text-white,
+.light .bg-emerald-600 .text-white,
+.light .bg-violet-600 .text-white,
+.light .bg-fuchsia-600 .text-white,
+.light .bg-purple-600 .text-white,
+.light .bg-amber-500 .text-white,
+.light .bg-amber-600 .text-white,
+.light .bg-orange-600 .text-white,
+.light .btn-primary .text-white,
+.light button .text-white,
+.light .text-white.keep-white,
+.light .avatar .text-white,
+.light .badge .text-white,
+.light .toast-container .text-white,
+.light [role="alert"] .text-white,
+.light .keep-text-white {
+  color: #ffffff !important;
+}
+
+.light .text-white.lucide,
+.light .keep-white.lucide {
+  color: #ffffff !important;
+}
+
+/* Background overrides in light mode */
+.light .bg-black\/50 {
+  background-color: rgba(241, 245, 249, 0.75) !important;
+  border-color: rgba(15, 23, 42, 0.08) !important;
+}
+.light .bg-black\/40 {
+  background-color: rgba(241, 245, 249, 0.65) !important;
+  border-color: rgba(15, 23, 42, 0.08) !important;
+}
+.light .bg-black\/60 {
+  background-color: rgba(241, 245, 249, 0.85) !important;
+  border-color: rgba(15, 23, 42, 0.08) !important;
+}
+.light .border-white\/10 {
+  border-color: rgba(15, 23, 42, 0.08) !important;
+}
+.light .border-white\/5 {
+  border-color: rgba(15, 23, 42, 0.05) !important;
+}
+.light .bg-black\/30 {
+  background-color: rgba(241, 245, 249, 0.55) !important;
+  border-color: rgba(15, 23, 42, 0.08) !important;
+}
+.light .bg-black\/20 {
+  background-color: rgba(241, 245, 249, 0.45) !important;
+  border-color: rgba(15, 23, 42, 0.05) !important;
+}
+.light .bg-cyan-950\/50 {
+  background-color: rgba(207, 250, 254, 0.45) !important;
+  border-color: rgba(6, 182, 212, 0.4) !important;
+}
+.light .text-cyan-300 {
+  color: #0891b2 !important; /* cyan-600 */
+}
+.light .text-cyan-400 {
+  color: #0891b2 !important; /* cyan-600 */
+}
+.light .text-amber-400 {
+  color: #d97706 !important; /* amber-600 */
+}
+.light .text-red-400 {
+  color: #dc2626 !important; /* red-600 */
+}
+.light .text-green-400 {
+  color: #16a34a !important; /* green-600 */
+}
+.light .text-purple-400 {
+  color: #7c3aed !important; /* purple-600 */
+}
+.light .text-yellow-400 {
+  color: #ca8a04 !important; /* yellow-600 */
+}
+
+/* ─── Selection ───────────────────────────────────────────────────── */
+::selection {
+  background: rgba(6, 182, 212, 0.3);
+  color: #fff;
+}
+
+::-moz-selection {
+  background: rgba(6, 182, 212, 0.3);
+  color: #fff;
+}
+
+/* ─── Scrollbar ───────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: rgba(34, 211, 238, 0.2);
+  border-radius: 10px;
+  transition: background 0.3s;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(34, 211, 238, 0.5);
+}
+
+/* ─── Focus Ring ──────────────────────────────────────────────────── */
+*:focus-visible {
+  outline: 2px solid rgba(6, 182, 212, 0.5);
+  outline-offset: 2px;
+  border-radius: 8px;
+}
+
+/* ─── Skeleton Loading ────────────────────────────────────────────── */
+@layer components {
+  .skeleton {
+    background: linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0.04) 25%,
+      rgba(255, 255, 255, 0.08) 50%,
+      rgba(255, 255, 255, 0.04) 75%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 2s linear infinite;
+    border-radius: 12px;
+  }
+
+  .skeleton-text {
+    height: 14px;
+    border-radius: 6px;
+  }
+
+  .skeleton-title {
+    height: 22px;
+    width: 60%;
+    border-radius: 8px;
+  }
+
+  .skeleton-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 16px;
+  }
+}
+
+/* ─── Page Transitions ────────────────────────────────────────────── */
+@layer utilities {
+  .page-enter {
+    animation: page-in 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  .page-exit {
+    animation: page-out 0.2s ease-in both;
+  }
+}
+
+@keyframes page-in {
+  0% {
+    opacity: 0;
+    transform: translateY(12px) scale(0.99);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes page-out {
+  0% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.99);
+  }
+}
+
+/* ─── Shimmer (from tailwind config) ──────────────────────────────── */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* ─── Glass Utility ───────────────────────────────────────────────── */
+@layer utilities {
+  .glass {
+    background: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .glass-strong {
+    background: rgba(15, 23, 42, 0.8);
+    backdrop-filter: blur(40px) saturate(200%);
+    -webkit-backdrop-filter: blur(40px) saturate(200%);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+}
+
+/* ─── Number Tabular ──────────────────────────────────────────────── */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ─── Reduced Motion ──────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ─── Print ───────────────────────────────────────────────────────── */
+@media print {
+  body { background: #fff; color: #000; }
+  .no-print { display: none !important; }
+}
