@@ -108,12 +108,12 @@ export default function AccountSettingsView() {
       
       {/* Header card */}
       <Card className="!p-4 shrink-0 flex items-center gap-4">
-        <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-teal-700 rounded-2xl flex items-center justify-center border border-emerald-300/20 shadow-sm shrink-0">
-          <User className="w-6 h-6 text-white keep-text-white" />
+        <div className="w-12 h-12 glass-icon-3d text-blue-600 dark:text-indigo-400 rounded-2xl flex items-center justify-center shrink-0">
+          <User className="w-6 h-6 text-blue-600 dark:text-indigo-400" />
         </div>
         <div>
-          <h2 className="font-black text-2xl text-emerald-950 dark:text-emerald-50">{isAr ? 'حسابي الشخصي وإعداداتي' : 'My Account & Settings'}</h2>
-          <p className="text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-widest">{isAr ? 'إدارة البيانات، المظهر، وكلمة المرور' : 'Manage profile info, layout, and credentials'}</p>
+          <h2 className="font-black text-2xl text-slate-900 dark:text-slate-50">{isAr ? 'حسابي الشخصي وإعداداتي' : 'My Account & Settings'}</h2>
+          <p className="text-xs font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-widest">{isAr ? 'إدارة البيانات، المظهر، وكلمة المرور' : 'Manage profile info, layout, and credentials'}</p>
         </div>
       </Card>
 
@@ -122,19 +122,19 @@ export default function AccountSettingsView() {
         {/* Column 1: Profile information */}
         <div className="lg:col-span-1 flex flex-col gap-6">
           <Card className="flex flex-col gap-6">
-            <h3 className="font-black text-emerald-950 dark:text-emerald-50 text-lg flex items-center gap-2 border-b border-emerald-500/10 dark:border-emerald-400/10 pb-3 select-none">
-              <Shield className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+            <h3 className="font-black text-slate-900 dark:text-slate-50 text-lg flex items-center gap-2 border-b border-slate-200 dark:border-white/5 pb-3 select-none">
+              <Shield className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
               {isAr ? 'الملف الشخصي والبيانات' : 'Personal Profile & Details'}
             </h3>
 
             {/* Profile Avatar / Large Initials */}
-            <div className="flex flex-col items-center text-center p-4 rounded-2xl bg-emerald-500/5 border border-emerald-500/10 dark:bg-black/30 dark:border-white/5 gap-3">
-              <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-700 text-white keep-text-white flex items-center justify-center text-3xl font-black border border-emerald-300/30 shadow-md">
+            <div className="flex flex-col items-center text-center p-4 rounded-2xl bg-blue-500/5 border border-blue-500/10 dark:bg-black/30 dark:border-white/5 gap-3">
+              <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-blue-600 via-indigo-600 to-violet-600 text-white keep-text-white flex items-center justify-center text-3xl font-black border border-white/20 shadow-md">
                 {(name || '?').charAt(0).toUpperCase()}
               </div>
               <div>
-                <h4 className="font-black text-emerald-950 dark:text-emerald-50 text-base">{isAr ? nameAr : name}</h4>
-                <p className="text-xs font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-widest mt-0.5">{t(role)}</p>
+                <h4 className="font-black text-slate-900 dark:text-slate-50 text-base">{isAr ? nameAr : name}</h4>
+                <p className="text-xs font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-widest mt-0.5">{t(role)}</p>
               </div>
             </div>
 
@@ -161,39 +161,39 @@ export default function AccountSettingsView() {
                 disabled={profileLoading}
                 className={`${s.btnSec} w-full gap-2 flex items-center justify-center`}
               >
-                <Save className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                <Save className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
                 <span>{profileLoading ? (isAr ? 'جاري الحفظ...' : 'Saving...') : (isAr ? 'حفظ البيانات الشخصية' : 'Save Details')}</span>
               </button>
 
-              <hr className="border-emerald-500/10 dark:border-emerald-400/10 my-1" />
+              <hr className="border-slate-200 dark:border-white/5 my-1" />
 
               {/* Read-Only Identity Fields */}
               <div className="flex flex-col gap-3">
                 {/* Email */}
-                <div className="flex items-center gap-3 p-3 rounded-xl bg-emerald-500/5 dark:bg-black/20 border border-emerald-500/5 dark:border-white/5">
-                  <Mail className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                <div className="flex items-center gap-3 p-3 rounded-xl bg-blue-500/5 dark:bg-black/20 border border-blue-500/5 dark:border-white/5">
+                  <Mail className="w-4 h-4 text-blue-600 dark:text-indigo-400 shrink-0" />
                   <div className="min-w-0">
                     <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 block uppercase">{isAr ? 'البريد الإلكتروني' : 'Email Address'}</span>
-                    <span className="text-xs font-mono font-bold text-emerald-950 dark:text-emerald-50 truncate block">{loggedUser?.email}</span>
+                    <span className="text-xs font-mono font-bold text-slate-900 dark:text-slate-50 truncate block">{loggedUser?.email}</span>
                   </div>
                 </div>
 
                 {/* Organization */}
-                <div className="flex items-center gap-3 p-3 rounded-xl bg-emerald-500/5 dark:bg-black/20 border border-emerald-500/5 dark:border-white/5">
-                  <Building2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                <div className="flex items-center gap-3 p-3 rounded-xl bg-blue-500/5 dark:bg-black/20 border border-blue-500/5 dark:border-white/5">
+                  <Building2 className="w-4 h-4 text-blue-600 dark:text-indigo-400 shrink-0" />
                   <div className="min-w-0">
                     <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 block uppercase">{isAr ? 'المنشأة الطبية المعين بها' : 'Assigned Facility'}</span>
-                    <span className="text-xs font-bold text-emerald-950 dark:text-emerald-50 truncate block">{facilityName}</span>
+                    <span className="text-xs font-bold text-slate-900 dark:text-slate-50 truncate block">{facilityName}</span>
                   </div>
                 </div>
 
                 {/* Specialty (If exists) */}
                 {specialtyLabel && (
-                  <div className="flex items-center gap-3 p-3 rounded-xl bg-emerald-500/5 dark:bg-black/20 border border-emerald-500/5 dark:border-white/5">
-                    <Activity className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                  <div className="flex items-center gap-3 p-3 rounded-xl bg-blue-500/5 dark:bg-black/20 border border-blue-500/5 dark:border-white/5">
+                    <Activity className="w-4 h-4 text-blue-600 dark:text-indigo-400 shrink-0" />
                     <div className="min-w-0">
                       <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 block uppercase">{isAr ? 'التخصص الطبي الفعلي' : 'Clinical Specialty'}</span>
-                      <span className="text-xs font-bold text-emerald-950 dark:text-emerald-50 truncate block">{specialtyLabel}</span>
+                      <span className="text-xs font-bold text-slate-900 dark:text-slate-50 truncate block">{specialtyLabel}</span>
                     </div>
                   </div>
                 )}
@@ -207,17 +207,17 @@ export default function AccountSettingsView() {
           
           {/* Section A: App Appearance & Language */}
           <Card className="flex flex-col gap-5">
-            <h3 className="font-black text-emerald-950 dark:text-emerald-50 text-lg flex items-center gap-2 border-b border-emerald-500/10 dark:border-emerald-400/10 pb-3 select-none">
-              <Globe className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+            <h3 className="font-black text-slate-900 dark:text-slate-50 text-lg flex items-center gap-2 border-b border-slate-200 dark:border-white/5 pb-3 select-none">
+              <Globe className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
               {isAr ? 'تخصيص الواجهة واللغة' : 'Interface Settings & Language'}
             </h3>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               
               {/* Theme Toggle card */}
-              <div className="p-4 rounded-2xl bg-emerald-500/5 dark:bg-black/30 border border-emerald-500/10 dark:border-white/5 flex flex-col justify-between gap-4">
+              <div className="p-4 rounded-2xl bg-blue-500/5 dark:bg-black/30 border border-blue-500/10 dark:border-white/5 flex flex-col justify-between gap-4">
                 <div>
-                  <h4 className="font-black text-emerald-950 dark:text-emerald-50 text-sm flex items-center gap-2">
+                  <h4 className="font-black text-slate-900 dark:text-slate-50 text-sm flex items-center gap-2">
                     {isDark ? <Moon className="w-4 h-4 text-violet-400" /> : <Sun className="w-4 h-4 text-amber-500" />}
                     {isAr ? 'المظهر العام للتطبيق' : 'Application Theme'}
                   </h4>
@@ -225,7 +225,7 @@ export default function AccountSettingsView() {
                 </div>
                 <button
                   onClick={() => setTheme(isDark ? 'light' : 'dark')}
-                  className="w-full h-11 bg-white dark:bg-emerald-950/40 text-emerald-900 dark:text-emerald-100 hover:bg-emerald-50 dark:hover:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-500/20 rounded-xl transition-all font-black text-sm flex items-center justify-center gap-2"
+                  className="w-full h-11 bg-white dark:bg-slate-800/30 text-slate-800 dark:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800/50 border border-slate-200 dark:border-white/5 rounded-xl transition-all font-black text-sm flex items-center justify-center gap-2"
                 >
                   {isDark ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-violet-500" />}
                   {isDark ? (isAr ? 'تغيير للوضع الفاتح' : 'Switch to Light') : (isAr ? 'تغيير للوضع الداكن' : 'Switch to Dark')}
@@ -233,9 +233,9 @@ export default function AccountSettingsView() {
               </div>
 
               {/* Language Toggle card */}
-              <div className="p-4 rounded-2xl bg-emerald-500/5 dark:bg-black/30 border border-emerald-500/10 dark:border-white/5 flex flex-col justify-between gap-4">
+              <div className="p-4 rounded-2xl bg-blue-500/5 dark:bg-black/30 border border-blue-500/10 dark:border-white/5 flex flex-col justify-between gap-4">
                 <div>
-                  <h4 className="font-black text-emerald-950 dark:text-emerald-50 text-sm flex items-center gap-2">
+                  <h4 className="font-black text-slate-900 dark:text-slate-50 text-sm flex items-center gap-2">
                     <Globe className="w-4 h-4 text-cyan-400" />
                     {isAr ? 'اللغة الحالية' : 'Language (RTL/LTR)'}
                   </h4>
@@ -243,7 +243,7 @@ export default function AccountSettingsView() {
                 </div>
                 <button
                   onClick={() => setLang(lang === 'ar' ? 'en' : 'ar')}
-                  className="w-full h-11 bg-white dark:bg-emerald-950/40 text-emerald-900 dark:text-emerald-100 hover:bg-emerald-50 dark:hover:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-500/20 rounded-xl transition-all font-black text-sm flex items-center justify-center gap-2"
+                  className="w-full h-11 bg-white dark:bg-slate-800/30 text-slate-800 dark:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800/50 border border-slate-200 dark:border-white/5 rounded-xl transition-all font-black text-sm flex items-center justify-center gap-2"
                 >
                   <Globe className="w-4 h-4 text-cyan-500" />
                   {lang === 'ar' ? 'English (UK)' : 'العربية (RTL)'}
@@ -255,8 +255,8 @@ export default function AccountSettingsView() {
 
           {/* Section B: Password reset */}
           <Card className="flex flex-col gap-5">
-            <h3 className="font-black text-emerald-950 dark:text-emerald-50 text-lg flex items-center gap-2 border-b border-emerald-500/10 dark:border-emerald-400/10 pb-3 select-none">
-              <Lock className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+            <h3 className="font-black text-slate-900 dark:text-slate-50 text-lg flex items-center gap-2 border-b border-slate-200 dark:border-white/5 pb-3 select-none">
+              <Lock className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
               {isAr ? 'إعدادات الأمان وتحديث الرمز' : 'Security Settings & Password Change'}
             </h3>
 

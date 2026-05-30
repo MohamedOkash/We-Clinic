@@ -26,7 +26,7 @@ export function ConfirmDialog({
 
   const btnConfirmClass = danger
     ? 'bg-gradient-to-br from-red-600 to-rose-700 text-white shadow-lg border border-red-500/30'
-    : 'bg-gradient-to-br from-emerald-500 to-teal-700 text-white shadow-lg border border-emerald-400/20';
+    : 'bg-gradient-to-br from-blue-600 via-indigo-600 to-violet-600 text-white shadow-lg border border-white/10';
 
   return (
     <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-fade-in">
@@ -36,7 +36,7 @@ export function ConfirmDialog({
       >
         {/* Header */}
         <div className="flex justify-between items-start gap-4">
-          <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${danger ? 'bg-red-500/10 text-red-400 border border-red-500/20' : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'}`}>
+          <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${danger ? 'bg-red-500/10 text-red-400 border border-red-500/20' : 'bg-blue-500/10 text-blue-400 border border-blue-500/20'}`}>
             <AlertTriangle className="w-5 h-5" />
           </div>
           <button 

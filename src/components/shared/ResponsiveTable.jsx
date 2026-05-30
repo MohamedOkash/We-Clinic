@@ -9,7 +9,7 @@ export default function ResponsiveTable({ headers, data = [], renderRow, renderC
 
   if (!hasData) {
     return (
-      <div className="p-8 text-center text-slate-500 dark:text-slate-400 font-bold italic bg-black/10 dark:bg-black/30 rounded-2xl border border-emerald-500/5 dark:border-white/5">
+      <div className="p-8 text-center text-slate-500 dark:text-slate-400 font-bold italic bg-black/10 dark:bg-black/30 rounded-2xl border border-slate-200/50 dark:border-white/5">
         {emptyMessage || (isAr ? 'لا توجد بيانات متاحة' : 'No data available')}
       </div>
     );
@@ -25,7 +25,7 @@ export default function ResponsiveTable({ headers, data = [], renderRow, renderC
           <button
             type="button"
             onClick={() => setLimit(prev => Math.min(prev + 5, data.length))}
-            className="w-full py-3 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-cyan-400 font-black rounded-xl border border-emerald-500/20 text-sm transition-all duration-200"
+            className="w-full py-3 bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-cyan-400 font-black rounded-xl border border-blue-500/20 text-sm transition-all duration-200"
           >
             {isAr ? `عرض المزيد (+${data.length - limit})` : `Show More (+${data.length - limit})`}
           </button>
@@ -33,10 +33,10 @@ export default function ResponsiveTable({ headers, data = [], renderRow, renderC
       </div>
 
       {/* Desktop Responsive Table (Visible on screens >= 768px) */}
-      <div className="hidden md:block overflow-x-auto w-full border border-emerald-500/10 dark:border-white/5 rounded-2xl shadow-inner bg-black/10 dark:bg-black/30">
+      <div className="hidden md:block overflow-x-auto w-full border border-slate-200 dark:border-white/5 rounded-2xl shadow-inner bg-black/10 dark:bg-black/30">
         <table className="w-full text-start border-collapse">
           <thead>
-            <tr className="border-b border-emerald-500/10 dark:border-white/10 bg-emerald-500/5 dark:bg-black/40 text-emerald-800 dark:text-slate-300 font-black text-sm">
+            <tr className="border-b border-slate-200/60 dark:border-white/10 bg-slate-100 dark:bg-black/40 text-slate-800 dark:text-slate-300 font-black text-sm">
               {headers.map((h, i) => (
                 <th key={i} className="px-5 py-4 text-start whitespace-nowrap font-black">
                   {h}
@@ -44,7 +44,7 @@ export default function ResponsiveTable({ headers, data = [], renderRow, renderC
               ))}
             </tr>
           </thead>
-          <tbody className="divide-y divide-emerald-500/5 dark:divide-white/5 text-emerald-950 dark:text-slate-100 text-sm font-semibold">
+          <tbody className="divide-y divide-slate-100 dark:divide-white/5 text-slate-800 dark:text-slate-100 text-sm font-semibold">
             {data.map((item, idx) => renderRow(item, idx))}
           </tbody>
         </table>

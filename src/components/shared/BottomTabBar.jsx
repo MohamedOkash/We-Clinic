@@ -55,7 +55,7 @@ export default function BottomTabBar({ onMoreClick }) {
   const tabs = TAB_CONFIG[role] || TAB_CONFIG['doctor'];
 
   return (
-    <div className="fixed bottom-0 inset-x-0 h-16 bg-emerald-50/95 dark:bg-emerald-950/95 backdrop-blur-2xl border-t border-emerald-500/10 dark:border-emerald-400/10 flex items-center justify-around z-40 md:hidden select-none pb-safe">
+    <div className="fixed bottom-0 inset-x-0 h-16 bg-white/95 dark:bg-[#0b0f1d]/95 backdrop-blur-2xl border-t border-slate-200 dark:border-white/5 flex items-center justify-around z-40 md:hidden select-none pb-safe">
       {tabs.map(item => {
         const Icon = item.icon;
         const isActive = activePage === item.page;
@@ -64,7 +64,7 @@ export default function BottomTabBar({ onMoreClick }) {
             key={item.page}
             onClick={() => setActivePage(item.page)}
             className={`flex flex-col items-center justify-center flex-1 h-full gap-1 transition-all duration-200 active:scale-95
-              ${isActive ? 'text-emerald-600 dark:text-cyan-400' : 'text-slate-500 dark:text-slate-400'}`}
+              ${isActive ? 'text-blue-600 dark:text-blue-400' : 'text-slate-500 dark:text-slate-400'}`}
           >
             <Icon className="w-5.5 h-5.5" />
             <span className="text-[10px] font-black tracking-tight">{isAr ? item.labelAr : item.label}</span>

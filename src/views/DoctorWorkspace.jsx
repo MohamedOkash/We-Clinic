@@ -638,7 +638,7 @@ Are there any serious interactions or warnings? Be concise and clear.`;
                     <div className="flex gap-2 shrink-0">
                       <button
                         onClick={() => respondToRecordRequest(req.id, true)}
-                        className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl text-sm font-bold transition-all"
+                        className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-sm font-bold transition-all"
                       >
                         {isAr ? 'موافقة' : 'Approve'}
                       </button>
@@ -962,7 +962,7 @@ Are there any serious interactions or warnings? Be concise and clear.`;
                         ))}
                       </select>
                       <div className="absolute inset-y-0 end-0 flex items-center pe-3 pointer-events-none">
-                        <ChevronDown className="w-4 h-4 text-emerald-500/80" />
+                        <ChevronDown className="w-4 h-4 text-slate-400" />
                       </div>
                     </div>
                   </div>
@@ -1014,7 +1014,7 @@ Are there any serious interactions or warnings? Be concise and clear.`;
                         <option value="Severe">{isAr ? 'شديدة' : 'Severe'}</option>
                       </select>
                       <div className="absolute inset-y-0 end-0 flex items-center pe-3 pointer-events-none">
-                        <ChevronDown className="w-4 h-4 text-emerald-500/80" />
+                        <ChevronDown className="w-4 h-4 text-slate-400" />
                       </div>
                     </div>
                     <button
@@ -1173,7 +1173,7 @@ Are there any serious interactions or warnings? Be concise and clear.`;
                             <option value="radiology">{isAr ? 'مركز أشعة' : 'Radiology Center'}</option>
                           </select>
                           <div className="absolute inset-y-0 end-0 flex items-center pe-3 pointer-events-none">
-                            <ChevronDown className="w-4 h-4 text-emerald-500/80" />
+                            <ChevronDown className="w-4 h-4 text-slate-400" />
                           </div>
                         </div>
                       </div>
@@ -1197,7 +1197,7 @@ Are there any serious interactions or warnings? Be concise and clear.`;
                               ))}
                           </select>
                           <div className="absolute inset-y-0 end-0 flex items-center pe-3 pointer-events-none">
-                            <ChevronDown className="w-4 h-4 text-emerald-500/80" />
+                            <ChevronDown className="w-4 h-4 text-slate-400" />
                           </div>
                         </div>
                       </div>
@@ -1344,12 +1344,12 @@ Are there any serious interactions or warnings? Be concise and clear.`;
               </InnerCard>
 
               {/* Live prescription */}
-              <InnerCard className="flex-1 flex flex-col min-h-[280px] border-emerald-500/30 shadow-[0_0_20px_rgba(16,185,129,0.1)]">
+              <InnerCard className="flex-1 flex flex-col min-h-[280px] border-indigo-500/20 shadow-[0_0_20px_rgba(99,102,241,0.06)]">
                 <div className="flex justify-between items-center mb-3">
                   <h3 className="font-black text-white text-lg">
-                    <Pill className="inline w-5 h-5 text-emerald-400 me-2" /> {t('prescription')}
+                    <Pill className="inline w-5 h-5 text-indigo-400 me-2" /> {t('prescription')}
                   </h3>
-                  <span className={`${s.badge} !bg-emerald-500/20 !text-emerald-300 !border-emerald-500/50`}>{rx.length}</span>
+                  <span className={`${s.badge} !bg-indigo-500/20 !text-indigo-300 !border-indigo-500/35`}>{rx.length}</span>
                 </div>
 
                 <div className="flex-1 overflow-visible md:overflow-y-auto flex flex-col gap-3 pe-1">
@@ -1358,7 +1358,7 @@ Are there any serious interactions or warnings? Be concise and clear.`;
                       {isAr ? 'لم تُضف أدوية بعد' : 'No drugs added yet'}
                     </div>
                   ) : rx.map((drug, idx) => (
-                    <div key={idx} className="bg-emerald-900/20 border border-emerald-500/30 p-3 rounded-xl animate-in zoom-in-95">
+                    <div key={idx} className="bg-indigo-950/20 border border-indigo-500/25 p-3 rounded-xl animate-in zoom-in-95">
                       <div className="flex justify-between items-start mb-2">
                         <span className="font-black text-white">{drug.name}</span>
                         <button onClick={() => setRx(prev => prev.filter((_, i) => i !== idx))} className="text-slate-400 hover:text-red-400 p-1">
@@ -1408,7 +1408,7 @@ Are there any serious interactions or warnings? Be concise and clear.`;
                     </button>
                     <button
                       onClick={handleSendToPharmacy}
-                      className={`${s.btnPrimary} flex-[2] !bg-gradient-to-r !from-emerald-500 !to-teal-700 !border-emerald-400/50 !h-10 text-sm`}
+                      className={`${s.btnPrimary} flex-[2] !bg-gradient-to-r !from-blue-600 !via-indigo-600 !to-violet-600 !border-white/10 !h-10 text-sm`}
                     >
                       {t('sendToPharmacy')}
                     </button>
@@ -1480,7 +1480,7 @@ Are there any serious interactions or warnings? Be concise and clear.`;
                 ))}
               </select>
               <div className="absolute inset-y-0 end-0 flex items-center pe-4 pointer-events-none">
-                <ChevronDown className="w-5 h-5 text-emerald-500/80" />
+                <ChevronDown className="w-5 h-5 text-slate-400" />
               </div>
             </div>
           </div>
@@ -1558,7 +1558,7 @@ Are there any serious interactions or warnings? Be concise and clear.`;
                   <option value="female">{isAr ? 'أنثى' : 'Female'}</option>
                 </select>
                 <div className="absolute inset-y-0 end-0 flex items-center pe-4 pointer-events-none">
-                  <ChevronDown className="w-5 h-5 text-emerald-500/80" />
+                  <ChevronDown className="w-5 h-5 text-slate-400" />
                 </div>
               </div>
             </div>
@@ -1617,7 +1617,7 @@ Are there any serious interactions or warnings? Be concise and clear.`;
                   ))}
                 </select>
                 <div className="absolute inset-y-0 end-0 flex items-center pe-3 pointer-events-none">
-                  <ChevronDown className="w-4 h-4 text-emerald-500/80" />
+                  <ChevronDown className="w-4 h-4 text-slate-400" />
                 </div>
               </div>
             </div>

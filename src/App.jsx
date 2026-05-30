@@ -38,23 +38,27 @@ function Background() {
   const isDark = theme !== 'light';
 
   return (
-    <div className={`fixed inset-0 -z-10 overflow-hidden transition-colors duration-300 ${isDark ? 'bg-[#030806]' : 'bg-[#f0f7f4]'}`}>
-      <div className="absolute top-[-20%] start-[-10%] w-[80vw] h-[80vw] max-w-3xl max-h-3xl rounded-full"
-        style={{ background: isDark ? 'radial-gradient(circle, rgba(16,185,129,0.12) 0%, transparent 70%)' : 'radial-gradient(circle, rgba(52,211,153,0.06) 0%, transparent 70%)' }} />
-      <div className="absolute bottom-[-20%] end-[-10%] w-[80vw] h-[80vw] max-w-3xl max-h-3xl rounded-full"
-        style={{ background: isDark ? 'radial-gradient(circle, rgba(16,185,129,0.10) 0%, transparent 70%)' : 'radial-gradient(circle, rgba(52,211,153,0.04) 0%, transparent 70%)' }} />
-      <div className="absolute top-1/2 start-1/2 -translate-x-1/2 -translate-y-1/2 w-[60vw] h-[60vw] max-w-2xl max-h-2xl rounded-full"
-        style={{ background: isDark ? 'radial-gradient(circle, rgba(16,185,129,0.05) 0%, transparent 70%)' : 'radial-gradient(circle, rgba(16,185,129,0.02) 0%, transparent 70%)' }} />
-      <div className={`absolute inset-0 transition-opacity duration-300 ${isDark ? 'opacity-[0.03]' : 'opacity-[0.04]'}`}
-        style={{ backgroundImage: 'linear-gradient(rgba(16,185,129,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(16,185,129,0.5) 1px, transparent 1px)', backgroundSize: '60px 60px' }} />
+    <div className={`fixed inset-0 -z-10 overflow-hidden transition-colors duration-300 ${isDark ? 'bg-[#070814]' : 'bg-[#f3f5fa]'}`}>
+      {/* Top-left soft liquid glow */}
+      <div className="absolute top-[-15%] start-[-15%] w-[80vw] h-[80vw] max-w-3xl max-h-3xl rounded-full blur-[100px] pointer-events-none"
+        style={{ background: isDark ? 'radial-gradient(circle, rgba(99,102,241,0.1) 0%, rgba(168,85,247,0.03) 60%, transparent 100%)' : 'radial-gradient(circle, rgba(99,102,241,0.05) 0%, rgba(168,85,247,0.01) 60%, transparent 100%)' }} />
+      {/* Bottom-right soft liquid glow */}
+      <div className="absolute bottom-[-15%] end-[-15%] w-[80vw] h-[80vw] max-w-3xl max-h-3xl rounded-full blur-[100px] pointer-events-none"
+        style={{ background: isDark ? 'radial-gradient(circle, rgba(6,182,212,0.08) 0%, rgba(99,102,241,0.02) 60%, transparent 100%)' : 'radial-gradient(circle, rgba(6,182,212,0.03) 0%, rgba(99,102,241,0.01) 60%, transparent 100%)' }} />
+      {/* Center floating glow */}
+      <div className="absolute top-[35%] start-[25%] w-[60vw] h-[60vw] max-w-2xl max-h-2xl rounded-full blur-[120px] pointer-events-none"
+        style={{ background: isDark ? 'radial-gradient(circle, rgba(236,72,153,0.03) 0%, transparent 70%)' : 'radial-gradient(circle, rgba(236,72,153,0.008) 0%, transparent 70%)' }} />
+      {/* Grid structure overlay */}
+      <div className={`absolute inset-0 transition-opacity duration-300 ${isDark ? 'opacity-[0.012]' : 'opacity-[0.02]'}`}
+        style={{ backgroundImage: 'linear-gradient(rgba(148,163,184,0.3) 1px, transparent 1px), linear-gradient(90deg, rgba(148,163,184,0.3) 1px, transparent 1px)', backgroundSize: '70px 70px' }} />
     </div>
   );
 }
 
 // ─── Role Config ─────────────────────────────────────────────────────────────
 const ROLE_CONFIG = {
-  receptionist: { icon: Users,          colorFrom: 'from-teal-500',   colorTo: 'to-cyan-700'    },
-  doctor:       { icon: Activity,        colorFrom: 'from-emerald-500', colorTo: 'to-teal-700'  },
+  receptionist: { icon: Users,          colorFrom: 'from-cyan-500',   colorTo: 'to-blue-600'    },
+  doctor:       { icon: Activity,        colorFrom: 'from-blue-500',   colorTo: 'to-indigo-600'  },
   pharmacy:     { icon: Package,         colorFrom: 'from-amber-500',  colorTo: 'to-orange-700'  },
   radiology:    { icon: ScanLine,        colorFrom: 'from-purple-500', colorTo: 'to-violet-700'  },
   patient:      { icon: User,            colorFrom: 'from-cyan-500',   colorTo: 'to-blue-700'    },
@@ -122,34 +126,34 @@ function Sidebar({ onOpenSettings }) {
 
   return (
     <aside 
-      className="hidden md:flex flex-col h-full bg-emerald-50/90 dark:bg-emerald-950/20 backdrop-blur-3xl border-e border-emerald-500/10 dark:border-emerald-400/10 transition-all duration-300 z-50 select-none group w-16 lg:w-64 hover:w-64"
+      className="hidden md:flex flex-col h-full bg-white/55 dark:bg-[#080916]/55 backdrop-blur-3xl border-e border-slate-200/50 dark:border-white/5 transition-all duration-300 z-50 select-none group w-16 lg:w-64 hover:w-64"
     >
       {/* Sidebar Header */}
-      <div className="h-16 flex items-center gap-3 px-4 border-b border-emerald-500/10 dark:border-emerald-400/10 overflow-hidden shrink-0">
-        <div className="w-8 h-8 bg-gradient-to-br from-emerald-500 to-teal-700 rounded-xl flex items-center justify-center border border-emerald-300/30 shadow-[0_0_12px_rgba(16,185,129,0.4)] shrink-0">
-          <Activity className="w-4 h-4 text-white keep-text-white" />
+      <div className="h-16 flex items-center gap-3 px-4 border-b border-slate-200/50 dark:border-white/5 overflow-hidden shrink-0">
+        <div className="w-8 h-8 glass-icon-3d text-blue-600 dark:text-indigo-400 shadow-[0_0_12px_rgba(59,130,246,0.15)] shrink-0 flex items-center justify-center">
+          <Activity className="w-4 h-4 text-blue-600 dark:text-indigo-400" />
         </div>
-        <span className="font-black text-emerald-900 dark:text-emerald-50 text-base lg:block group-hover:block hidden tracking-tight whitespace-nowrap">{t('appTitle')}</span>
+        <span className="font-black text-slate-900 dark:text-slate-50 text-base lg:block group-hover:block hidden tracking-tight whitespace-nowrap">{t('appTitle')}</span>
       </div>
 
       {/* User profile section */}
-      <div className="p-4 border-b border-emerald-500/10 dark:border-emerald-400/10 flex items-center justify-between gap-3 overflow-hidden shrink-0">
+      <div className="p-4 border-b border-slate-200/50 dark:border-white/5 flex items-center justify-between gap-3 overflow-hidden shrink-0">
         <div className="flex items-center gap-3 min-w-0">
-          <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-700 text-white keep-text-white flex items-center justify-center font-black border border-emerald-300/20 shadow-sm shrink-0">
+          <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-blue-600 via-indigo-600 to-violet-600 text-white keep-text-white flex items-center justify-center font-black border border-white/10 shadow-sm shrink-0">
             {(loggedUser?.name || '?').charAt(0).toUpperCase()}
           </div>
           <div className="min-w-0 lg:block group-hover:block hidden">
-            <h4 className="font-black text-emerald-950 dark:text-emerald-50 text-xs truncate">{isAr ? loggedUser?.nameAr : loggedUser?.name}</h4>
-            <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-widest">{t(role)}</span>
+            <h4 className="font-black text-slate-950 dark:text-slate-50 text-xs truncate">{isAr ? loggedUser?.nameAr : loggedUser?.name}</h4>
+            <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">{t(role)}</span>
           </div>
         </div>
         {role !== 'account' && role !== 'admin' && (
           <button 
             onClick={onOpenSettings}
-            className="p-1.5 text-emerald-700 hover:text-emerald-950 dark:text-emerald-400 dark:hover:text-emerald-50 rounded-lg bg-emerald-500/5 hover:bg-emerald-500/10 border border-emerald-500/10 dark:border-white/5 transition-all shrink-0 lg:block group-hover:block hidden"
+            className="p-1.5 text-slate-600 hover:text-slate-950 dark:text-slate-400 dark:hover:text-slate-50 rounded-lg bg-slate-500/5 hover:bg-slate-500/10 border border-slate-500/10 dark:border-white/5 transition-all shrink-0 lg:block group-hover:block hidden"
             title={isAr ? 'إعدادات الحساب' : 'Account Settings'}
           >
-            <Lock className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+            <Lock className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
           </button>
         )}
       </div>
@@ -163,12 +167,12 @@ function Sidebar({ onOpenSettings }) {
             <button
               key={item.page}
               onClick={() => navigate(`/${role}/${item.page}`)}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-xl font-black text-xs transition-all duration-200 select-none justify-center lg:justify-start group-hover:justify-start
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-xl font-black text-xs transition-all duration-200 select-none justify-center lg:justify-start group-hover:justify-start group/btn
                 ${isActive 
-                  ? 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-md shadow-emerald-900/10 dark:shadow-none keep-text-white' 
-                  : 'text-emerald-800 dark:text-emerald-400/80 hover:bg-emerald-500/10 hover:text-emerald-950 dark:hover:text-emerald-50'}`}
+                  ? 'bg-gradient-to-br from-blue-600 via-indigo-600 to-violet-600 text-white shadow-lg shadow-blue-900/15 dark:shadow-none keep-text-white' 
+                  : 'text-slate-600 dark:text-slate-400/90 hover:bg-slate-500/5 hover:text-slate-950 dark:hover:text-white'}`}
             >
-              <Icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-white keep-text-white' : 'text-emerald-600 dark:text-emerald-400'}`} />
+              <Icon className={`w-4 h-4 shrink-0 transition-transform duration-200 group-hover/btn:scale-110 ${isActive ? 'text-white keep-text-white' : 'text-slate-500 dark:text-slate-400'}`} />
               <span className="lg:inline group-hover:inline hidden whitespace-nowrap">{isAr ? item.labelAr : item.label}</span>
             </button>
           );
@@ -176,11 +180,11 @@ function Sidebar({ onOpenSettings }) {
       </nav>
 
       {/* Sidebar Footer */}
-      <div className="p-3 border-t border-emerald-500/10 dark:border-emerald-400/10 flex flex-col gap-2 shrink-0 overflow-hidden">
+      <div className="p-3 border-t border-slate-200/50 dark:border-white/5 flex flex-col gap-2 shrink-0 overflow-hidden">
         <div className="flex flex-col lg:flex-row gap-1">
           <button
             onClick={() => setTheme(isDark ? 'light' : 'dark')}
-            className="flex-1 p-2 bg-emerald-500/5 hover:bg-emerald-500/10 dark:bg-black/30 dark:hover:bg-white/5 border border-emerald-500/10 dark:border-white/5 text-emerald-800 dark:text-emerald-300 hover:text-emerald-950 dark:hover:text-white rounded-lg transition-all flex items-center justify-center gap-1.5 font-bold text-[10px]"
+            className="flex-1 p-2 glass-icon-3d text-slate-800 dark:text-slate-300 hover:text-slate-950 dark:hover:text-white rounded-xl transition-all flex items-center justify-center gap-1.5 font-bold text-[10px]"
             title={isDark ? 'Switch to Light' : 'Switch to Dark'}
           >
             {isDark ? <Sun className="w-3.5 h-3.5 text-amber-500" /> : <Moon className="w-3.5 h-3.5 text-violet-600" />}
@@ -188,7 +192,7 @@ function Sidebar({ onOpenSettings }) {
           </button>
           <button
             onClick={() => setLang(lang === 'ar' ? 'en' : 'ar')}
-            className="flex-1 p-2 bg-emerald-500/5 hover:bg-emerald-500/10 dark:bg-black/30 dark:hover:bg-white/5 border border-emerald-500/10 dark:border-white/5 text-emerald-800 dark:text-emerald-300 hover:text-emerald-950 dark:hover:text-white rounded-lg transition-all flex items-center justify-center gap-1.5 font-bold text-[10px]"
+            className="flex-1 p-2 glass-icon-3d text-slate-800 dark:text-slate-300 hover:text-slate-950 dark:hover:text-white rounded-xl transition-all flex items-center justify-center gap-1.5 font-bold text-[10px]"
           >
             <Globe className="w-3.5 h-3.5" />
             <span className="lg:inline group-hover:inline hidden">{lang === 'ar' ? 'English' : 'عربي'}</span>
@@ -241,18 +245,18 @@ function TopNav() {
   const pageTitle = currentItem ? (isAr ? currentItem.labelAr : currentItem.label) : '';
 
   return (
-    <header className="bg-white/70 dark:bg-[#07130f]/60 backdrop-blur-2xl border-b border-emerald-500/10 dark:border-emerald-400/10 px-4 md:px-6 h-16 flex items-center justify-between shrink-0 z-40 transition-colors duration-300">
+    <header className="bg-white/50 dark:bg-[#0b0f1d]/50 backdrop-blur-3xl border-b border-slate-200/50 dark:border-white/5 px-4 md:px-6 h-16 flex items-center justify-between shrink-0 z-40 transition-colors duration-300">
       <div className="flex items-center gap-3">
         <button
           onClick={() => setIsMenuOpen(true)}
-          className="p-2 text-emerald-800 dark:text-slate-300 hover:text-emerald-950 dark:hover:text-white md:hidden"
+          className="p-2 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white md:hidden"
         >
           <Menu className="w-6 h-6" />
         </button>
-        <h3 className="font-black text-emerald-900 dark:text-white text-lg tracking-tight md:hidden">
+        <h3 className="font-black text-slate-900 dark:text-white text-lg tracking-tight md:hidden">
           {t('appTitle')}
         </h3>
-        <h3 className="font-black text-emerald-900 dark:text-white text-xl tracking-tight hidden md:block">
+        <h3 className="font-black text-slate-900 dark:text-white text-xl tracking-tight hidden md:block">
           {pageTitle}
         </h3>
       </div>
@@ -276,9 +280,9 @@ function TopNav() {
             </span>
           </div>
         ) : currentOrganization && (
-          <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/5 dark:bg-black/40 border border-emerald-500/10 dark:border-white/10 min-w-0">
-            <Building2 className="w-4 h-4 text-emerald-600 dark:text-emerald-300 shrink-0" />
-            <span className="font-black text-emerald-900 dark:text-white text-xs truncate max-w-[200px]">
+          <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-500/5 dark:bg-black/40 border border-blue-500/10 dark:border-white/10 min-w-0">
+            <Building2 className="w-4 h-4 text-blue-600 dark:text-indigo-400 shrink-0" />
+            <span className="font-black text-slate-700 dark:text-slate-200 text-xs truncate max-w-[200px]">
               {isAr ? currentOrganization.nameAr : currentOrganization.name}
             </span>
           </div>

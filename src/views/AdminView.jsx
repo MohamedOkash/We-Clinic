@@ -416,7 +416,7 @@ export default function AdminView() {
                   <InnerCard key={user.id || user.email} className="flex flex-col justify-between gap-4">
                     <div>
                       <div className="flex justify-between items-start gap-2">
-                        <span className={`${s.badge} !bg-emerald-500/20 !text-emerald-300 !border-emerald-500/30`}>
+                        <span className={s.badge}>
                           {t(user.role)}
                         </span>
                         {user.password && <span className="text-[10px] text-amber-300/80 font-bold bg-amber-500/10 px-1.5 py-0.5 rounded">{isAr ? 'بانتظار الدخول الأول' : 'Pending Activation'}</span>}

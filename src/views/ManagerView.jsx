@@ -18,7 +18,7 @@ function StatCard({ icon: Icon, label, value, color, sub }) {
         <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${color} flex items-center justify-center shadow-lg border border-white/20`}>
           <Icon className="w-6 h-6 text-white" />
         </div>
-        {sub && <span className="text-xs font-bold text-emerald-400 bg-emerald-500/20 px-2 py-1 rounded-full">{sub}</span>}
+        {sub && <span className="text-xs font-bold text-indigo-400 bg-indigo-500/10 px-2.5 py-1 rounded-full border border-indigo-500/20">{sub}</span>}
       </div>
       <div>
         <p className="text-3xl font-black text-white">{value}</p>
@@ -43,7 +43,7 @@ export default function ManagerView() {
   const totalRevenue     = paidInvoices.reduce((acc, inv) => acc + (inv.total || 0), 0);
 
   const roleStats = [
-    { role: 'receptionist', color: 'from-teal-500 to-cyan-700',    count: allUsers.filter(u => u.role === 'receptionist' && u.organizationId === currentOrganizationId).length },
+    { role: 'receptionist', color: 'from-cyan-500 to-blue-600',    count: allUsers.filter(u => u.role === 'receptionist' && u.organizationId === currentOrganizationId).length },
     { role: 'doctor',       color: 'from-blue-500 to-indigo-700',  count: allUsers.filter(u => u.role === 'doctor' && u.organizationId === currentOrganizationId).length },
     { role: 'pharmacy',     color: 'from-amber-500 to-orange-700', count: allUsers.filter(u => u.role === 'pharmacy' && u.organizationId === currentOrganizationId).length },
     { role: 'radiology',    color: 'from-purple-500 to-violet-700',count: allUsers.filter(u => u.role === 'radiology' && u.organizationId === currentOrganizationId).length },
@@ -173,7 +173,7 @@ export default function ManagerView() {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 shrink-0">
         <StatCard icon={Users}        label={t('totalPatients')}  value={totalPatients}  color="from-cyan-500 to-blue-700"    sub={isAr ? 'إجمالي' : 'Total'} />
         <StatCard icon={ClipboardList} label={t('todayQueue')}    value={queueToday}     color="from-amber-500 to-orange-700" sub={isAr ? 'اليوم' : 'Today'} />
-        <StatCard icon={DollarSign}   label={t('totalRevenue')}   value={`${totalRevenue.toLocaleString()} ${isAr ? 'ج.م' : 'EGP'}`} color="from-emerald-500 to-teal-700" sub={`${paidInvoices.length} ${isAr ? 'مدفوعة' : 'paid'}`} />
+        <StatCard icon={DollarSign}   label={t('totalRevenue')}   value={`${totalRevenue.toLocaleString()} ${isAr ? 'ج.م' : 'EGP'}`} color="from-blue-600 to-indigo-700" sub={`${paidInvoices.length} ${isAr ? 'مدفوعة' : 'paid'}`} />
         <StatCard icon={Package}      label={t('dispensedToday')} value={dispensedToday} color="from-fuchsia-500 to-violet-700" />
       </div>
 
@@ -183,7 +183,7 @@ export default function ManagerView() {
         {/* 1. Visit Trends (AreaChart) */}
         <Card className="flex flex-col gap-4">
           <h3 className="font-black text-white text-lg flex items-center gap-2">
-            <TrendingUp className="w-5.5 h-5.5 text-emerald-400" /> 
+            <TrendingUp className="w-5.5 h-5.5 text-blue-400" /> 
             {isAr ? 'تغير معدل الزيارات الشهري' : 'Monthly Visit Trends'}
           </h3>
           <div className="w-full h-72">
@@ -365,11 +365,11 @@ export default function ManagerView() {
           ]}
           data={patients}
           renderRow={(p, i) => (
-            <tr key={p.id} className="border-b border-emerald-500/5 dark:border-white/5 hover:bg-emerald-500/5 dark:hover:bg-white/5 transition-colors text-emerald-950 dark:text-slate-100">
+            <tr key={p.id} className="border-b border-slate-200/50 dark:border-white/5 hover:bg-slate-500/5 dark:hover:bg-white/5 transition-colors text-slate-900 dark:text-slate-100">
               <td className="px-5 py-3 font-black text-cyan-500">{i + 1}</td>
-              <td className="px-5 py-3 font-bold text-emerald-900 dark:text-white">{isAr ? p.nameAr : p.name}</td>
-              <td className="px-5 py-3 text-emerald-700 dark:text-slate-400">{p.phone}</td>
-              <td className="px-5 py-3 text-emerald-700 dark:text-slate-400">{p.lastVisit}</td>
+              <td className="px-5 py-3 font-bold text-slate-800 dark:text-white">{isAr ? p.nameAr : p.name}</td>
+              <td className="px-5 py-3 text-slate-600 dark:text-slate-400">{p.phone}</td>
+              <td className="px-5 py-3 text-slate-600 dark:text-slate-400">{p.lastVisit}</td>
               <td className="px-5 py-3">
                 <span className={`${s.badge} ${p.status === 'Waiting' ? '!bg-amber-500/20 !text-amber-400 !border-amber-400/50' : '!bg-cyan-500/20 !text-cyan-400 !border-cyan-400/50'}`}>
                   {p.status}

@@ -384,10 +384,10 @@ export default function LabOrderForm({ patientId, patientName, patientNameAr, do
         </InnerCard>
 
         {/* Selected Test Cart */}
-        <InnerCard className="flex-1 flex flex-col min-h-0 border-emerald-500/10">
+        <InnerCard className="flex-1 flex flex-col min-h-0 border-slate-200/40 dark:border-white/5">
           <h3 className="text-base font-black text-white mb-3 shrink-0 flex items-center justify-between">
             <span>{isAr ? 'الفحوصات المطلوبة في هذا السند:' : 'Selected Cart Items:'}</span>
-            <span className="px-2.5 py-0.5 rounded-full text-xs bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-black">
+            <span className="px-2.5 py-0.5 rounded-full text-xs bg-blue-500/10 text-blue-400 border border-blue-500/20 font-black">
               {cart.length}
             </span>
           </h3>
@@ -493,14 +493,14 @@ export default function LabOrderForm({ patientId, patientName, patientNameAr, do
 
                 {/* Show Results if Completed */}
                 {order.status === 'Completed' && order.results?.length > 0 && (
-                  <div className="bg-emerald-950/10 border border-emerald-500/20 p-3 rounded-xl">
-                    <h5 className="text-xs font-black text-emerald-400 mb-1.5 flex items-center gap-1.5">
+                  <div className="bg-blue-950/10 border border-blue-500/20 p-3 rounded-xl">
+                    <h5 className="text-xs font-black text-blue-400 mb-1.5 flex items-center gap-1.5">
                       <CheckCircle className="w-3.5 h-3.5" />
                       {isAr ? 'نتائج الفحص المخبرية والتشخيصية:' : 'Test Results & Findings:'}
                     </h5>
                     <div className="flex flex-col gap-1">
                       {order.results.map((r, idx) => (
-                        <div key={idx} className="text-xs text-emerald-200/90 font-bold bg-emerald-950/20 p-2 rounded-lg border border-emerald-500/10 flex justify-between gap-2">
+                        <div key={idx} className="text-xs text-blue-200/90 font-bold bg-blue-950/20 p-2 rounded-lg border border-blue-500/10 flex justify-between gap-2">
                           <span>{r.test}:</span>
                           <span className="text-white font-black">{r.result}</span>
                         </div>
