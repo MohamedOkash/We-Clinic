@@ -1,4 +1,4 @@
-import { useState, useEffect, lazy, Suspense } from 'react';
+import { useState, useEffect, useRef, lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useNavigate, useParams, useLocation } from 'react-router-dom';
 import {
   LogOut, Globe, Activity, Users, Package, ScanLine, User, LayoutDashboard,
@@ -321,6 +321,7 @@ function RoleLayout() {
   const { rolePath, tabPath } = useParams();
   const { role, activePage, setActivePage, isLoggedIn, isMenuOpen, setIsMenuOpen, patients, handleLogout, isAr, t } = useClinic();
   const navigate = useNavigate();
+  const lastSyncedPage = useRef('');
 
   // Command Palette State
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
@@ -333,27 +334,32 @@ function RoleLayout() {
     }
   }, [rolePath, role, isLoggedIn, navigate]);
 
-  // 2. Sync URL tab parameter with context activePage
+  // 2. Sync URL tab parameter with context activePage in a single, stable effect
   useEffect(() => {
-    if (tabPath && tabPath !== activePage) {
-      setActivePage(tabPath);
-    } else if (!tabPath && role) {
-      const defaultPage = role === 'doctor' ? 'registry'
-                        : role === 'pharmacy' ? 'pos'
-                        : role === 'receptionist' ? 'register'
-                        : role === 'radiology' ? 'orders'
-                        : role === 'patient' ? 'home'
-                        : 'dashboard';
-      navigate(`/${role}/${defaultPage}`, { replace: true });
-    }
-  }, [tabPath, activePage, role, navigate, setActivePage]);
+    if (!role) return;
 
-  // 3. Sync context activePage back to URL if changed elsewhere (e.g. state modifications)
-  useEffect(() => {
-    if (activePage && tabPath && activePage !== tabPath) {
+    const defaultPage = role === 'doctor' ? 'registry'
+                      : role === 'pharmacy' ? 'pos'
+                      : role === 'receptionist' ? 'register'
+                      : role === 'radiology' ? 'orders'
+                      : role === 'patient' ? 'home'
+                      : 'dashboard';
+
+    if (!tabPath) {
+      navigate(`/${role}/${defaultPage}`, { replace: true });
+      lastSyncedPage.current = defaultPage;
+      setActivePage(defaultPage);
+      return;
+    }
+
+    if (tabPath !== lastSyncedPage.current) {
+      lastSyncedPage.current = tabPath;
+      setActivePage(tabPath);
+    } else if (activePage !== tabPath) {
+      lastSyncedPage.current = activePage;
       navigate(`/${role}/${activePage}`, { replace: true });
     }
-  }, [activePage, tabPath, role, navigate]);
+  }, [tabPath, activePage, role, navigate, setActivePage]);
 
   // 4. Keyboard Shortcuts: Ctrl+K / Ctrl+N / Escape
   useEffect(() => {
@@ -601,7 +607,7 @@ function HomeRedirect() {
 
 // ─── Inner App ────────────────────────────────────────────────────────────────
 function InnerApp() {
-  const { isLoggedIn } = useClinic();
+  const { isLoggedIn, isAuthLoading } = useClinic();
   const [isOffline, setIsOffline] = useState(!navigator.onLine);
 
   useEffect(() => {
@@ -614,6 +620,10 @@ function InnerApp() {
       window.removeEventListener('offline', handleOffline);
     };
   }, []);
+
+  if (isAuthLoading) {
+    return <LoadingSpinner message={document.documentElement.lang === 'ar' ? 'جاري التحقق من الهوية...' : 'Verifying identity...'} />;
+  }
 
   return (
     <>

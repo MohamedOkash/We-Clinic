@@ -536,14 +536,14 @@ Are there any serious interactions or warnings? Be concise and clear.`;
   const tabBtn = (id, Icon, label, extra = '') => (
     <button
       onClick={() => setTab(id)}
-      className={`flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-black transition-all whitespace-nowrap
+      className={`flex items-center gap-2 pb-2 text-sm font-bold transition-all whitespace-nowrap relative border-b-2
         ${tab === id
-          ? (extra || 'bg-gradient-to-br from-slate-700 to-slate-800 text-cyan-400 shadow-inner border border-slate-600')
-          : 'text-slate-400 hover:text-white'}`}
+          ? (extra || 'text-cyan-400 border-cyan-400 font-black')
+          : 'text-slate-400 hover:text-slate-200 border-transparent'}`}
     >
       <Icon className="w-4 h-4" /> {label}
       {id === 'aiPrescription' && pendingCount > 0 && (
-        <span className="w-2 h-2 bg-red-500 rounded-full animate-ping" />
+        <span className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full animate-ping" />
       )}
     </button>
   );
@@ -552,9 +552,9 @@ Are there any serious interactions or warnings? Be concise and clear.`;
     <div className="min-h-full md:h-full flex flex-col gap-4 overflow-visible md:overflow-hidden animate-in fade-in duration-500">
 
       {/* Tab bar */}
-      <Card className="!p-3 flex flex-col md:flex-row justify-between items-center shrink-0 gap-4">
+      <Card className="!p-4 flex flex-col lg:flex-row justify-between items-start lg:items-center shrink-0 gap-4">
         <div className="flex items-center gap-4 min-w-0">
-          <div className="w-12 h-12 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-xl flex items-center justify-center shrink-0 border border-cyan-300/50">
+          <div className="w-12 h-12 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-xl flex items-center justify-center shrink-0 border border-cyan-300/50 shadow-lg">
             <Stethoscope className="w-6 h-6 text-white" />
           </div>
           <div>
@@ -562,15 +562,14 @@ Are there any serious interactions or warnings? Be concise and clear.`;
             <p className="text-xs font-bold text-cyan-300 uppercase tracking-wider">{getSpecName(specialty, isAr)}</p>
           </div>
         </div>
-        <div className="flex bg-black/50 p-1.5 rounded-2xl border border-white/10 w-full md:w-auto overflow-x-auto gap-1">
+        <div className="flex items-center gap-6 overflow-x-auto w-full lg:w-auto scrollbar-none pb-2 lg:pb-0 border-t border-white/5 lg:border-t-0 pt-3 lg:pt-0">
           {tabBtn('registry',       Users,        t('patientsRegistry'))}
           {tabBtn('patientHistory', FileImage,    t('medicalHistory'))}
           {tabBtn('examination',    Activity,      t('examAndReports'))}
           {tabBtn('labOrders',      BarChart3,    'Lab Orders')}
           {tabBtn('aiPrescription', Sparkles,      t('aiPrescription'),
-            'bg-gradient-to-br from-violet-700 to-fuchsia-800 text-white border border-fuchsia-500/50'
+            'text-violet-400 border-violet-400 font-black'
           )}
-          {tabBtn('account',        Settings,      isAr ? 'إعدادات الحساب' : 'Account Settings')}
         </div>
       </Card>
 
@@ -1457,12 +1456,6 @@ Are there any serious interactions or warnings? Be concise and clear.`;
           </div>
         )}
 
-        {/* ── Account Settings ── */}
-        {tab === 'account' && (
-          <div className="flex-1 overflow-y-auto min-h-0 animate-in slide-in-from-bottom-4">
-            <AccountSettingsView />
-          </div>
-        )}
       </div>
 
       {/* Request Patient Record Modal */}

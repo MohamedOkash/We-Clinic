@@ -227,6 +227,7 @@ const ClinicContext = createContext(null);
 export function ClinicProvider({ children }) {
   // Auth (with useSessionPersist to keep local session fallback)
   const [isLoggedIn,  setIsLoggedIn]  = useSessionPersist('clinic_is_logged_in', false);
+  const [isAuthLoading, setIsAuthLoading] = useState(true);
   const [role,        setRole]        = useSessionPersist('clinic_role', 'doctor');
   const [specialty,   setSpecialty]   = useSessionPersist('clinic_specialty', 'orthopedics');
   const [loggedUser,  setLoggedUser]  = useSessionPersist('clinic_logged_user', null);   // { name, nameAr, patientId? }
@@ -256,7 +257,7 @@ export function ClinicProvider({ children }) {
 
   // Firestore Live Mapped Subscriptions
   useEffect(() => {
-    if (!db) return;
+    if (!db || isAuthLoading || !isLoggedIn) return;
 
     const unsubscribes = [
       onSnapshot(collection(db, 'patients'), (snap) => {
@@ -348,11 +349,14 @@ export function ClinicProvider({ children }) {
     ];
 
     return () => unsubscribes.forEach(unsub => unsub());
-  }, [db]);
+  }, [db, isAuthLoading, isLoggedIn]);
 
   // Auth Listener to restore sessions on refresh
   useEffect(() => {
-    if (!auth || !db) return;
+    if (!auth || !db) {
+      setIsAuthLoading(false);
+      return;
+    }
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
         try {
@@ -368,7 +372,11 @@ export function ClinicProvider({ children }) {
         } catch (e) {
           console.error('Session restore error:', e);
         }
+      } else {
+        setIsLoggedIn(false);
+        setLoggedUser(null);
       }
+      setIsAuthLoading(false);
     });
     return unsubscribe;
   }, [auth, db]);
@@ -433,7 +441,7 @@ export function ClinicProvider({ children }) {
 
   // Check if seeding is required
   useEffect(() => {
-    if (!db) return;
+    if (!db || isAuthLoading || !isLoggedIn) return;
     const checkAndSeed = async () => {
       try {
         const snap = await getDocs(query(collection(db, 'patients'), limit(1)));
@@ -445,7 +453,7 @@ export function ClinicProvider({ children }) {
       }
     };
     checkAndSeed();
-  }, [db, seedDatabase]);
+  }, [db, isAuthLoading, isLoggedIn, seedDatabase]);
 
   const currentOrganization = useMemo(() => (
     organizations.find(org => org.id === currentOrganizationId) || organizations[0] || INITIAL_ORGANIZATIONS[0]
@@ -583,6 +591,35 @@ export function ClinicProvider({ children }) {
       }
 
       if (password === masterPassword) {
+        if (auth && db) {
+          try {
+            const userCredential = await signInWithEmailAndPassword(auth, adminEmail, password);
+            const userDoc = await getDoc(doc(db, 'users', userCredential.user.uid));
+            if (!userDoc.exists()) {
+              await setDoc(doc(db, 'users', userCredential.user.uid), {
+                email: adminEmail,
+                name: 'Super Admin',
+                nameAr: 'المدير العام',
+                role: 'admin',
+                organizationId: 'system',
+              });
+            }
+          } catch (authErr) {
+            console.warn('Super Admin Firebase login failed, trying to auto-register:', authErr);
+            try {
+              const userCredential = await createUserWithEmailAndPassword(auth, adminEmail, password);
+              await setDoc(doc(db, 'users', userCredential.user.uid), {
+                email: adminEmail,
+                name: 'Super Admin',
+                nameAr: 'المدير العام',
+                role: 'admin',
+                organizationId: 'system',
+              });
+            } catch (regErr) {
+              console.error('Super Admin Firebase registration failed:', regErr);
+            }
+          }
+        }
         setRole('admin');
         setCurrentOrganizationId('system');
         setLoggedUser({
@@ -1947,7 +1984,7 @@ export function ClinicProvider({ children }) {
 
   const value = {
     // Auth
-    isLoggedIn, role, setRole, specialty, setSpecialty, loggedUser,
+    isLoggedIn, isAuthLoading, role, setRole, specialty, setSpecialty, loggedUser,
     handleLogin, handleSignUp, handleGoogleSignIn, handleLogout,
     organizations, currentOrganization, currentOrganizationId, setCurrentOrganizationId,
     allUsers, setUsers,
