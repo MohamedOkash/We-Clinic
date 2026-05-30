@@ -1,4 +1,6 @@
-import http from 'http';
+import express from 'express';
+import cors from 'cors';
+import rateLimit from 'express-rate-limit';
 import https from 'https';
 import fs from 'fs';
 import path from 'path';
@@ -24,108 +26,112 @@ try {
         }
       }
     });
-    console.log('Loaded environment variables from .env file successfully.');
-  } else {
-    console.warn('.env file not found in current working directory.');
+    console.log('Loaded environment variables successfully.');
   }
 } catch (err) {
   console.error('Failed to parse .env file:', err.message);
 }
 
+const app = express();
 const PORT = process.env.PORT || 5000;
 
-// ─── HTTP Proxy Server ───
-const server = http.createServer((req, res) => {
-  // Set CORS headers
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+// Enable CORS
+app.use(cors());
+app.use(express.json());
 
-  // Handle preflight options request
-  if (req.method === 'OPTIONS') {
-    res.writeHead(204);
-    res.end();
-    return;
-  }
+// Rate Limiter: max 20 requests/minute per IP
+const limiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: 20,
+  message: { error: 'Too many requests from this IP, please try again after a minute.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 
-  // Handle Gemini proxy route
-  if (req.method === 'POST' && req.url === '/api/gemini') {
-    let body = '';
-    req.on('data', chunk => {
-      body += chunk;
+// Apply rate limiting specifically to the Gemini proxy route
+app.use('/api/gemini', limiter);
+
+// Proxy POST route for Gemini
+app.post('/api/gemini', (req, res) => {
+  try {
+    const { messages, systemPrompt } = req.body;
+
+    if (!messages || !Array.isArray(messages)) {
+      return res.status(400).json({ error: 'Missing or invalid messages array' });
+    }
+
+    // Input sanitization: max 2000 chars per message content
+    const sanitizedMessages = messages.map(m => {
+      let content = m.content || m.text || '';
+      if (typeof content !== 'string') content = '';
+      return {
+        role: m.role === 'assistant' || m.role === 'model' ? 'model' : 'user',
+        parts: [{ text: content.substring(0, 2000) }]
+      };
     });
 
-    req.on('end', () => {
-      try {
-        const parsed = JSON.parse(body);
-        const { prompt } = parsed;
+    const apiKey = process.env.GEMINI_API_KEY || process.env.VITE_GEMINI_API_KEY;
+    if (!apiKey || apiKey.includes('xxxxxxx')) {
+      return res.status(500).json({ error: 'Google Gemini API key not configured on the backend server.' });
+    }
 
-        if (!prompt) {
-          res.writeHead(400, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify({ error: 'Missing prompt in request body' }));
-          return;
-        }
-
-        // Get API Key from environment variables
-        const apiKey = process.env.VITE_GEMINI_API_KEY || process.env.GEMINI_API_KEY;
-        if (!apiKey || apiKey.includes('xxxxxxx')) {
-          res.writeHead(500, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify({ error: 'Google Gemini API key not configured on the backend server.' }));
-          return;
-        }
-
-        // Call Google Gemini API securely from the backend
-        const targetUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
-        const payload = JSON.stringify({
-          contents: [
-            {
-              parts: [
-                { text: prompt }
-              ]
-            }
-          ]
-        });
-
-        const geminiReq = https.request(targetUrl, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Content-Length': Buffer.byteLength(payload)
-          }
-        }, (geminiRes) => {
-          let responseData = '';
-          geminiRes.on('data', d => {
-            responseData += d;
-          });
-
-          geminiRes.on('end', () => {
-            res.writeHead(geminiRes.statusCode, { 'Content-Type': 'application/json' });
-            res.end(responseData);
-          });
-        });
-
-        geminiReq.on('error', (err) => {
-          console.error('Error forwarding request to Google Gemini API:', err);
-          res.writeHead(500, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify({ error: 'Failed to communicate with Google Gemini API', details: err.message }));
-        });
-
-        geminiReq.write(payload);
-        geminiReq.end();
-
-      } catch (err) {
-        console.error('Error processing proxy request:', err);
-        res.writeHead(400, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ error: 'Invalid JSON request body', details: err.message }));
+    // Call Google Gemini 2.0 Flash API securely
+    const targetUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+    const payload = JSON.stringify({
+      system_instruction: { parts: [{ text: systemPrompt || '' }] },
+      contents: sanitizedMessages,
+      generationConfig: {
+        temperature: 0.7,
+        maxOutputTokens: 1500,
       }
     });
-  } else {
-    // 404 for other endpoints
-    res.writeHead(404, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ error: 'Route not found' }));
+
+    const geminiReq = https.request(targetUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Content-Length': Buffer.byteLength(payload)
+      }
+    }, (geminiRes) => {
+      let responseData = '';
+      geminiRes.on('data', d => {
+        responseData += d;
+      });
+
+      geminiRes.on('end', () => {
+        try {
+          const parsedData = JSON.parse(responseData);
+          if (geminiRes.statusCode !== 200) {
+            return res.status(geminiRes.statusCode).json(parsedData);
+          }
+          const text = parsedData.candidates?.[0]?.content?.parts?.[0]?.text || 'Error';
+          res.json({ text });
+        } catch (parseErr) {
+          res.status(500).json({ error: 'Failed to parse Google API response', details: parseErr.message });
+        }
+      });
+    });
+
+    geminiReq.on('error', (err) => {
+      console.error('Error forwarding request to Gemini:', err);
+      res.status(500).json({ error: 'Failed to communicate with Google Gemini API', details: err.message });
+    });
+
+    geminiReq.write(payload);
+    geminiReq.end();
+
+  } catch (error) {
+    console.error('Proxy internal error:', error);
+    res.status(500).json({ error: 'Internal Server Error', details: error.message });
   }
 });
 
-server.listen(PORT, () => {
-  console.log(`Gemini API Proxy Server is running on port ${PORT}`);
-});
+// Start the server (only if run directly as a Node script)
+if (process.env.NODE_ENV !== 'test' && !process.env.FIREBASE_CONFIG) {
+  app.listen(PORT, () => {
+    console.log(`Gemini API Proxy Server running on port ${PORT}`);
+  });
+}
+
+// Export Express app for Firebase Cloud Functions or other serverless backends
+export default app;

@@ -121,6 +121,26 @@ function usePersist(key, initialValue) {
   return [state, set];
 }
 
+function useSessionPersist(key, initialValue) {
+  const [state, setState] = useState(() => {
+    try {
+      const saved = sessionStorage.getItem(key) || localStorage.getItem(key);
+      return saved ? JSON.parse(saved) : initialValue;
+    } catch { return initialValue; }
+  });
+  const set = useCallback((value) => {
+    setState(prev => {
+      const next = typeof value === 'function' ? value(prev) : value;
+      try {
+        sessionStorage.setItem(key, JSON.stringify(next));
+        localStorage.setItem(key, JSON.stringify(next));
+      } catch {}
+      return next;
+    });
+  }, [key]);
+  return [state, set];
+}
+
 const DEFAULT_CLINIC_ORG_ID = 'clinic_ortho_helio';
 const DEFAULT_PHARMACY_ORG_ID = 'pharmacy_care_plus';
 const DEFAULT_LAB_ORG_ID = 'lab_alpha';
@@ -205,11 +225,11 @@ function recordBelongsToOrganization(item, organizationId) {
 const ClinicContext = createContext(null);
 
 export function ClinicProvider({ children }) {
-  // Auth (with usePersist to keep local session fallback)
-  const [isLoggedIn,  setIsLoggedIn]  = usePersist('clinic_is_logged_in', false);
-  const [role,        setRole]        = usePersist('clinic_role', 'doctor');
-  const [specialty,   setSpecialty]   = usePersist('clinic_specialty', 'orthopedics');
-  const [loggedUser,  setLoggedUser]  = usePersist('clinic_logged_user', null);   // { name, nameAr, patientId? }
+  // Auth (with useSessionPersist to keep local session fallback)
+  const [isLoggedIn,  setIsLoggedIn]  = useSessionPersist('clinic_is_logged_in', false);
+  const [role,        setRole]        = useSessionPersist('clinic_role', 'doctor');
+  const [specialty,   setSpecialty]   = useSessionPersist('clinic_specialty', 'orthopedics');
+  const [loggedUser,  setLoggedUser]  = useSessionPersist('clinic_logged_user', null);   // { name, nameAr, patientId? }
   const [organizations, setOrganizations] = usePersist('clinic_organizations', INITIAL_ORGANIZATIONS);
   const [currentOrganizationId, setCurrentOrganizationId] = usePersist('clinic_current_organization', DEFAULT_CLINIC_ORG_ID);
   const [allUsers, setUsers]          = usePersist('clinic_users', INITIAL_USERS);

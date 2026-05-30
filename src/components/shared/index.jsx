@@ -1,5 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
 import { X, Inbox, TrendingUp, TrendingDown, Minus } from 'lucide-react';
+import { jsPDF } from 'jspdf';
+import 'jspdf-autotable';
+import * as XLSX from 'xlsx';
 
 // ─── Design Tokens ────────────────────────────────────────────────────────────
 export const s = {
@@ -580,6 +583,10 @@ export function printMedicalReport(visit, patient, isAr) {
           <div class="logo">🏥 ${isAr ? 'عيادتنا 3D' : 'Our Clinic 3D'}</div>
           <div class="title">${isAr ? 'التقرير الطبي المعتمد للزيارة' : 'Official Consultation Report'}</div>
         </div>
+        <div style="display: flex; flex-direction: column; align-items: center; margin: 0 10px;">
+          <img src="https://api.qrserver.com/v1/create-qr-code/?size=70x70&data=WE-CLINIC-VISIT-${visit.id || Date.now()}" width="70" height="70" style="border: 1px solid #e2e8f0; padding: 2px; border-radius: 6px;" />
+          <span style="font-size: 8px; color: #94a3b8; margin-top: 4px; font-family: monospace;">VISIT-${visit.id || 'NEW'}</span>
+        </div>
         <div class="clinic-info">
           <div><strong>${isAr ? 'العيادة:' : 'Clinic:'}</strong> ${visit.doctor}</div>
           <div><strong>${isAr ? 'التخصص:' : 'Specialty:'}</strong> ${visit.specialty}</div>
@@ -729,6 +736,10 @@ export function exportCompleteMedicalHistory(record, patient, isAr) {
           <div class="logo">🏥 ${isAr ? 'عيادتنا 3D' : 'Our Clinic 3D'}</div>
           <div class="title">${isAr ? 'السجل الطبي التاريخي الشامل للمريض' : 'Complete Medical History Dossier'}</div>
         </div>
+        <div style="display: flex; flex-direction: column; align-items: center; margin: 0 10px;">
+          <img src="https://api.qrserver.com/v1/create-qr-code/?size=70x70&data=WE-CLINIC-PATIENT-${patient.id}" width="70" height="70" style="border: 1px solid #e2e8f0; padding: 2px; border-radius: 6px;" />
+          <span style="font-size: 8px; color: #94a3b8; margin-top: 4px; font-family: monospace;">PATIENT-${patient.id}</span>
+        </div>
         <div class="timestamp">
           <div>${isAr ? 'تم الاستخراج في:' : 'Extracted on:'} ${new Date().toLocaleDateString(isAr ? 'ar-EG' : 'en-GB')}</div>
           <div>${isAr ? 'نظام عيادتنا الموحد' : '3D Clinic EHR System'}</div>
@@ -774,5 +785,123 @@ export function exportCompleteMedicalHistory(record, patient, isAr) {
     </body></html>
   `);
   win.document.close();
+}
+
+// ─── Export Patients List to Excel ───────────────────────────────────────────
+export function exportPatientsToExcel(patients, isAr = true) {
+  const data = patients.map((p, idx) => ({
+    [isAr ? 'م' : 'No.']: idx + 1,
+    [isAr ? 'الاسم' : 'Name']: isAr ? p.nameAr || p.name : p.name,
+    [isAr ? 'الهاتف' : 'Phone']: p.phone || '',
+    [isAr ? 'تاريخ الميلاد' : 'Date of Birth']: p.dob || '',
+    [isAr ? 'الجنس' : 'Gender']: p.gender === 'female' ? (isAr ? 'أنثى' : 'Female') : (isAr ? 'ذكر' : 'Male'),
+    [isAr ? 'آخر زيارة' : 'Last Visit']: p.lastVisit || '',
+    [isAr ? 'الحالة' : 'Status']: p.status || '',
+  }));
+
+  const worksheet = XLSX.utils.json_to_sheet(data);
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, isAr ? 'المرضى' : 'Patients');
+  
+  if (isAr) {
+    worksheet['!views'] = [{ RTL: true }];
+  }
+
+  XLSX.writeFile(workbook, `patients_export_${Date.now()}.xlsx`);
+}
+
+// ─── Export Invoices to Excel ────────────────────────────────────────────────
+export function exportInvoicesToExcel(invoices, isAr = true) {
+  const data = invoices.map((inv, idx) => ({
+    [isAr ? 'رقم الفاتورة' : 'Invoice ID']: inv.id,
+    [isAr ? 'النوع' : 'Type']: inv.source === 'prescription' ? (isAr ? 'روشتة طبية' : 'Prescription') : (isAr ? 'مبيعات مباشرة' : 'POS Direct'),
+    [isAr ? 'اسم المريض' : 'Patient Name']: isAr ? inv.patientNameAr || inv.patientName : inv.patientName,
+    [isAr ? 'التاريخ' : 'Date']: inv.date,
+    [isAr ? 'الإجمالي' : 'Total Amount']: inv.total,
+    [isAr ? 'الحالة' : 'Status']: inv.status === 'Paid' ? (isAr ? 'مدفوعة' : 'Paid') : (isAr ? 'غير مدفوعة' : 'Unpaid'),
+  }));
+
+  const worksheet = XLSX.utils.json_to_sheet(data);
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, isAr ? 'المبيعات والفواتير' : 'Invoices');
+
+  if (isAr) {
+    worksheet['!views'] = [{ RTL: true }];
+  }
+
+  XLSX.writeFile(workbook, `revenue_report_${Date.now()}.xlsx`);
+}
+
+// ─── Export Medical Record to PDF ────────────────────────────────────────────
+export function exportMedicalHistoryToPDF(record, patient, isAr = true) {
+  const doc = new jsPDF({
+    orientation: 'portrait',
+    unit: 'mm',
+    format: 'a4'
+  });
+
+  // Header Title
+  doc.setFontSize(22);
+  doc.setTextColor(8, 145, 178); // Cyan-600
+  doc.text('We-Clinic Unified EHR Report', 14, 20);
+  
+  doc.setFontSize(10);
+  doc.setTextColor(100, 116, 139); // Slate-500
+  doc.text(`Generated: ${new Date().toLocaleDateString()} | EHR Security Tag: WE-CLINIC-SECURE`, 14, 26);
+  
+  // Patient details box
+  doc.setFillColor(248, 250, 252);
+  doc.rect(14, 32, 182, 35, 'F');
+  
+  doc.setFontSize(11);
+  doc.setTextColor(30, 41, 59);
+  doc.text(`Patient Name: ${patient.name} (${patient.nameAr || ''})`, 18, 39);
+  doc.text(`Phone: ${patient.phone || 'N/A'}`, 18, 45);
+  doc.text(`DOB: ${patient.dob || 'N/A'} | Gender: ${patient.gender || 'N/A'}`, 18, 51);
+  doc.text(`National ID: ${patient.nationalId || 'N/A'}`, 18, 57);
+  doc.text(`Record Status: ${patient.status || 'Active'}`, 18, 63);
+
+  // Bounding box representing the validation QR Code
+  doc.rect(162, 36, 26, 26);
+  doc.setFontSize(7);
+  doc.text('SCAN QR', 170, 48);
+  doc.text('VALIDATION', 165, 52);
+
+  // Medical Summary
+  doc.setFontSize(14);
+  doc.setTextColor(8, 145, 178);
+  doc.text('Medical Summary', 14, 78);
+  
+  doc.setFontSize(10);
+  doc.setTextColor(71, 85, 105);
+  const chronicList = (record.chronicDiseases || []).map(d => typeof d === 'object' ? `${d.code}: ${d.en}` : d).join(', ');
+  const allergyList = (record.allergies || []).map(a => typeof a === 'object' ? `${a.name} (${a.severity})` : a).join(', ');
+  doc.text(`Chronic Conditions: ${chronicList || 'None'}`, 14, 85);
+  doc.text(`Allergies: ${allergyList || 'None'}`, 14, 91);
+
+  // Visits table
+  doc.setFontSize(14);
+  doc.setTextColor(8, 145, 178);
+  doc.text('Clinical Encounters History', 14, 102);
+
+  const tableRows = (record.visits || []).map((v, idx) => [
+    record.visits.length - idx,
+    v.date,
+    v.doctor,
+    v.specialty,
+    v.vitals ? `BP: ${v.vitals.bp || 'N/A'} | HR: ${v.vitals.hr || 'N/A'} | Temp: ${v.vitals.temp || 'N/A'}` : 'N/A',
+    v.notes ? v.notes.substring(0, 55) + (v.notes.length > 55 ? '...' : '') : 'N/A'
+  ]);
+
+  doc.autoTable({
+    startY: 107,
+    head: [['No.', 'Date', 'Physician', 'Department', 'Vitals Signs', 'Clinical Summary']],
+    body: tableRows,
+    theme: 'striped',
+    headStyles: { fillColor: [8, 145, 178] },
+    styles: { fontSize: 8, font: 'helvetica' }
+  });
+
+  doc.save(`medical_record_${patient.id}_${Date.now()}.pdf`);
 }
 

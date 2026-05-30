@@ -1,27 +1,36 @@
-import { useState } from 'react';
+import { useState, useEffect, lazy, Suspense } from 'react';
+import { BrowserRouter, Routes, Route, Navigate, useNavigate, useParams, useLocation } from 'react-router-dom';
 import {
   LogOut, Globe, Activity, Users, Package, ScanLine, User, LayoutDashboard,
   Building2, Sun, Moon, Sparkles, Pill, MessageSquare, FileText, Calendar,
-  UploadCloud, FolderOpen, Bot, Bell, AlertTriangle, Menu, X, UserPlus, Lock, Shield, Settings
+  UploadCloud, FolderOpen, Bot, Bell, AlertTriangle, Menu, X, UserPlus, Lock, Shield, Settings, Search
 } from 'lucide-react';
 import { ClinicProvider, useClinic } from './contexts/ClinicContext';
-import { ToastContainer, useToast } from './hooks/useToast';
-import { GlassModal, Input, s } from './components/shared';
+import { ToastContainer } from './hooks/useToast';
+import { GlassModal, Input } from './components/shared';
 import NotificationBell from './components/NotificationCenter';
-import AuthView         from './views/AuthView';
-import ReceptionistView from './views/ReceptionistView';
-import DoctorWorkspace  from './views/DoctorWorkspace';
-import PharmacyView     from './views/PharmacyView';
-import RadiologyView    from './views/RadiologyView';
-import PatientPortal    from './views/PatientPortal';
-import ManagerView      from './views/ManagerView';
-import AdminView        from './views/AdminView';
-import AccountSettingsView from './views/AccountSettingsView';
+
+// Lazy load views for bundle size optimization
+const AuthView         = lazy(() => import('./views/AuthView'));
+const ReceptionistView = lazy(() => import('./views/ReceptionistView'));
+const DoctorWorkspace  = lazy(() => import('./views/DoctorWorkspace'));
+const PharmacyView     = lazy(() => import('./views/PharmacyView'));
+const RadiologyView    = lazy(() => import('./views/RadiologyView'));
+const PatientPortal    = lazy(() => import('./views/PatientPortal'));
+const ManagerView      = lazy(() => import('./views/ManagerView'));
+const AdminView        = lazy(() => import('./views/AdminView'));
+const AccountSettingsView = lazy(() => import('./views/AccountSettingsView'));
+
+import LoadingSpinner from './components/shared/LoadingSpinner';
 
 // Responsive Components
 import MobileDrawer from './components/shared/MobileDrawer';
 import BottomTabBar from './components/shared/BottomTabBar';
 import { useBreakpoint } from './hooks/useBreakpoint';
+
+// Shared Router Components
+import ProtectedRoute from './components/shared/ProtectedRoute';
+import ErrorBoundary from './components/shared/ErrorBoundary';
 
 // ─── Background ───────────────────────────────────────────────────────────────
 function Background() {
@@ -106,7 +115,8 @@ const SIDEBAR_ITEMS = {
 
 // ─── Sidebar Component ─────────────────────────────────────────────────────────
 function Sidebar({ onOpenSettings }) {
-  const { role, activePage, setActivePage, isAr, t, loggedUser, handleLogout, theme, setTheme, lang, setLang } = useClinic();
+  const { role, activePage, isAr, t, loggedUser, handleLogout, theme, setTheme, lang, setLang } = useClinic();
+  const navigate = useNavigate();
   const isDark = theme !== 'light';
   const menuItems = SIDEBAR_ITEMS[role] || [];
 
@@ -152,7 +162,7 @@ function Sidebar({ onOpenSettings }) {
           return (
             <button
               key={item.page}
-              onClick={() => setActivePage(item.page)}
+              onClick={() => navigate(`/${role}/${item.page}`)}
               className={`flex items-center gap-3 px-3 py-2.5 rounded-xl font-black text-xs transition-all duration-200 select-none justify-center lg:justify-start group-hover:justify-start
                 ${isActive 
                   ? 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-md shadow-emerald-900/10 dark:shadow-none keep-text-white' 
@@ -187,7 +197,7 @@ function Sidebar({ onOpenSettings }) {
 
         <button
           onClick={handleLogout}
-          className="w-full flex items-center justify-center lg:justify-start group-hover:justify-start gap-2 p-2.5 bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:text-red-400 dark:hover:bg-red-500 dark:hover:text-white rounded-lg transition-all font-bold text-xs border border-red-500/20"
+          className="w-full flex items-center justify-center lg:justify-start group-hover:justify-start gap-2 p-2.5 bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:text-red-400 dark:hover:bg-red-50 dark:hover:text-white rounded-lg transition-all font-bold text-xs border border-red-500/20"
         >
           <LogOut className="w-3.5 h-3.5" />
           <span className="lg:inline group-hover:inline hidden whitespace-nowrap">{t('logout')}</span>
@@ -246,46 +256,156 @@ function TopNav() {
 
 // ─── Role Router ─────────────────────────────────────────────────────────────
 function RoleView() {
-  const { role, activePage } = useClinic();
-  if (activePage === 'account' && role === 'manager') {
-    return <AccountSettingsView />;
+  const { role, activePage, isAr } = useClinic();
+  
+  let component;
+  if (activePage === 'account') {
+    component = <AccountSettingsView />;
+  } else {
+    switch (role) {
+      case 'receptionist': component = <ReceptionistView />; break;
+      case 'doctor':       component = <DoctorWorkspace />; break;
+      case 'pharmacy':     component = <PharmacyView />; break;
+      case 'radiology':    component = <RadiologyView />; break;
+      case 'patient':      component = <PatientPortal />; break;
+      case 'manager':      component = <ManagerView />; break;
+      case 'admin':        component = <AdminView />; break;
+      default:             component = <DoctorWorkspace />;
+    }
   }
-  switch (role) {
-    case 'receptionist': return <ReceptionistView />;
-    case 'doctor':       return <DoctorWorkspace />;
-    case 'pharmacy':     return <PharmacyView />;
-    case 'radiology':    return <RadiologyView />;
-    case 'patient':      return <PatientPortal />;
-    case 'manager':      return <ManagerView />;
-    case 'admin':        return <AdminView />;
-    default:             return <DoctorWorkspace />;
-  }
+
+  return (
+    <Suspense fallback={<LoadingSpinner message={isAr ? 'جاري تحميل لوحة التحكم...' : 'Loading dashboard workspace...'} />}>
+      {component}
+    </Suspense>
+  );
 }
 
-// ─── Inner App ────────────────────────────────────────────────────────────────
-function InnerApp() {
-  const { isLoggedIn, setActivePage, isMenuOpen, setIsMenuOpen } = useClinic();
+// ─── RoleLayout Wrapper for synced route matching ──────────────────────────────
+function RoleLayout() {
+  const { rolePath, tabPath } = useParams();
+  const { role, activePage, setActivePage, isLoggedIn, isMenuOpen, setIsMenuOpen, patients, handleLogout, isAr, t } = useClinic();
+  const navigate = useNavigate();
 
-  if (!isLoggedIn) {
-    return (
-      <div className="min-h-screen w-screen overflow-y-auto relative flex flex-col justify-center bg-[#f0f7f4] dark:bg-[#030806]">
-        <Background />
-        <AuthView />
-      </div>
-    );
-  }
+  // Command Palette State
+  const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+
+  // 1. Role verification: user can't access a route of a different role
+  useEffect(() => {
+    if (isLoggedIn && rolePath && rolePath !== role) {
+      navigate(`/${role}`, { replace: true });
+    }
+  }, [rolePath, role, isLoggedIn, navigate]);
+
+  // 2. Sync URL tab parameter with context activePage
+  useEffect(() => {
+    if (tabPath && tabPath !== activePage) {
+      setActivePage(tabPath);
+    } else if (!tabPath && role) {
+      const defaultPage = role === 'doctor' ? 'registry'
+                        : role === 'pharmacy' ? 'pos'
+                        : role === 'receptionist' ? 'register'
+                        : role === 'radiology' ? 'orders'
+                        : role === 'patient' ? 'home'
+                        : 'dashboard';
+      navigate(`/${role}/${defaultPage}`, { replace: true });
+    }
+  }, [tabPath, activePage, role, navigate, setActivePage]);
+
+  // 3. Sync context activePage back to URL if changed elsewhere (e.g. state modifications)
+  useEffect(() => {
+    if (activePage && tabPath && activePage !== tabPath) {
+      navigate(`/${role}/${activePage}`, { replace: true });
+    }
+  }, [activePage, tabPath, role, navigate]);
+
+  // 4. Keyboard Shortcuts: Ctrl+K / Ctrl+N / Escape
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setIsCommandPaletteOpen(prev => !prev);
+      }
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'n') {
+        e.preventDefault();
+        if (['receptionist', 'doctor', 'admin', 'manager'].includes(role)) {
+          navigate(`/${role}/${role === 'doctor' ? 'registry' : role === 'receptionist' ? 'register' : 'patients'}`);
+        }
+      }
+      if (e.key === 'Escape') {
+        setIsCommandPaletteOpen(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [role, navigate]);
+
+  // Filter Patients
+  const filteredPatients = searchQuery.trim() === '' ? [] : patients.filter(p => {
+    const query = searchQuery.toLowerCase();
+    const nameMatch = p.name?.toLowerCase().includes(query) || false;
+    const nameArMatch = p.nameAr?.includes(query) || false;
+    const phoneMatch = p.phone?.includes(query) || false;
+    return nameMatch || nameArMatch || phoneMatch;
+  });
+
+  // Filter Pages (from SIDEBAR_ITEMS[role])
+  const rolePages = SIDEBAR_ITEMS[role] || [];
+  const filteredPages = searchQuery.trim() === '' ? rolePages.slice(0, 4) : rolePages.filter(item => {
+    const query = searchQuery.toLowerCase();
+    return item.label.toLowerCase().includes(query) || item.labelAr.includes(query);
+  });
+
+  // Filter Actions
+  const allActions = [
+    {
+      id: 'book',
+      label: 'Book Appointment',
+      labelAr: 'حجز موعد جديد',
+      shortcut: 'Ctrl+N',
+      execute: () => navigate(`/${role}/${role === 'receptionist' ? 'appointments' : role === 'patient' ? 'book' : 'registry'}`)
+    },
+    {
+      id: 'settings',
+      label: 'Account Settings',
+      labelAr: 'إعدادات الحساب',
+      execute: () => navigate(`/${role}/account`)
+    },
+    {
+      id: 'logout',
+      label: 'System Logout',
+      labelAr: 'تسجيل الخروج من النظام',
+      execute: handleLogout
+    }
+  ];
+  const filteredActions = searchQuery.trim() === '' ? allActions : allActions.filter(action => {
+    const query = searchQuery.toLowerCase();
+    return action.label.toLowerCase().includes(query) || action.labelAr.includes(query);
+  });
+
+  const handlePatientSelect = (p) => {
+    setIsCommandPaletteOpen(false);
+    if (role === 'doctor') {
+      navigate(`/doctor/registry`);
+    } else if (role === 'receptionist') {
+      navigate(`/receptionist/search`);
+    } else {
+      navigate(`/${role}/patients`);
+    }
+  };
 
   return (
     <div className="min-h-screen md:h-screen w-screen flex flex-col md:flex-row overflow-y-auto md:overflow-hidden relative pb-16 md:pb-0">
       <Background />
       {/* Collapsible Sidebar (Tablet/Desktop) */}
-      <Sidebar onOpenSettings={() => setActivePage('account')} />
+      <Sidebar onOpenSettings={() => navigate(`/${role}/account`)} />
       
       {/* Mobile personal overlay drawer */}
       <MobileDrawer 
         isOpen={isMenuOpen} 
         onClose={() => setIsMenuOpen(false)} 
-        onOpenSettings={() => setActivePage('account')} 
+        onOpenSettings={() => navigate(`/${role}/account`)} 
       />
 
       <div className="flex-1 flex flex-col min-h-0 overflow-visible md:overflow-hidden">
@@ -298,16 +418,196 @@ function InnerApp() {
       {/* Mobile bottom tab navigation */}
       <BottomTabBar onMoreClick={() => setIsMenuOpen(true)} />
 
+      {/* Command Palette Modal */}
+      {isCommandPaletteOpen && (
+        <div 
+          className="fixed inset-0 z-[110] flex items-start justify-center pt-[15vh] px-4 bg-black/60 backdrop-blur-md animate-fade-in"
+          onClick={() => setIsCommandPaletteOpen(false)}
+        >
+          <div 
+            className="w-full max-w-xl bg-slate-900/95 border border-slate-800 rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[60vh] animate-scale-up"
+            onClick={e => e.stopPropagation()}
+          >
+            {/* Input Header */}
+            <div className="p-4 border-b border-slate-800/80 flex items-center gap-3 bg-slate-950/40">
+              <Search className="w-5 h-5 text-cyan-400 shrink-0" />
+              <input
+                autoFocus
+                type="text"
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+                placeholder={isAr ? 'بحث عن مرضى، صفحات، أو خدمات... (Esc للإغلاق)' : 'Search patients, pages, or services... (Esc to close)'}
+                className="w-full bg-transparent text-white border-0 outline-none text-sm placeholder-slate-500 font-bold"
+              />
+              <span className="text-[10px] bg-slate-800 text-slate-400 px-2 py-0.5 rounded font-black border border-slate-700/50 shrink-0">ESC</span>
+            </div>
+
+            {/* Results Area */}
+            <div className="flex-1 overflow-y-auto p-3 space-y-4 max-h-[45vh] scrollbar-thin">
+              
+              {/* 1. Patient Matches */}
+              {filteredPatients.length > 0 && (
+                <div>
+                  <h4 className="px-3 py-1 text-[10px] font-black text-slate-500 uppercase tracking-widest border-b border-slate-800/40 pb-1 mb-1.5">
+                    {isAr ? 'المرضى المطابقون' : 'Matching Patients'}
+                  </h4>
+                  <div className="space-y-1">
+                    {filteredPatients.map(p => (
+                      <button
+                        key={p.id}
+                        onClick={() => handlePatientSelect(p)}
+                        className="w-full text-start px-3 py-2 hover:bg-slate-800/60 rounded-xl flex justify-between items-center transition-all border border-transparent hover:border-slate-800/40 text-sm group"
+                      >
+                        <div>
+                          <p className="font-bold text-white group-hover:text-cyan-400 transition-colors">{isAr ? p.nameAr : p.name}</p>
+                          <p className="text-xs text-slate-400 mt-0.5">{p.phone}</p>
+                        </div>
+                        <span className="text-[10px] bg-cyan-500/10 text-cyan-400 border border-cyan-400/20 px-2.5 py-0.5 rounded-full font-black">
+                          {p.status}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* 2. Navigation Shortcuts */}
+              {filteredPages.length > 0 && (
+                <div>
+                  <h4 className="px-3 py-1 text-[10px] font-black text-slate-500 uppercase tracking-widest border-b border-slate-800/40 pb-1 mb-1.5">
+                    {isAr ? 'التنقل السريع' : 'Navigation Shortcuts'}
+                  </h4>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+                    {filteredPages.map(item => {
+                      const Icon = item.icon || Activity;
+                      return (
+                        <button
+                          key={item.page}
+                          onClick={() => {
+                            setIsCommandPaletteOpen(false);
+                            navigate(`/${role}/${item.page}`);
+                          }}
+                          className="text-start px-3 py-2.5 hover:bg-slate-800/60 rounded-xl flex items-center gap-2.5 transition-all text-xs border border-transparent hover:border-slate-800/40 text-white font-bold group"
+                        >
+                          <Icon className="w-4 h-4 text-cyan-400 group-hover:scale-110 transition-transform shrink-0" />
+                          <span>{isAr ? item.labelAr : item.label}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* 3. Global Actions */}
+              {filteredActions.length > 0 && (
+                <div>
+                  <h4 className="px-3 py-1 text-[10px] font-black text-slate-500 uppercase tracking-widest border-b border-slate-800/40 pb-1 mb-1.5">
+                    {isAr ? 'إجراءات سريعة' : 'Quick Actions'}
+                  </h4>
+                  <div className="space-y-1">
+                    {filteredActions.map(action => (
+                      <button
+                        key={action.id}
+                        onClick={() => {
+                          setIsCommandPaletteOpen(false);
+                          action.execute();
+                        }}
+                        className="w-full text-start px-3 py-2.5 hover:bg-slate-800/60 rounded-xl flex items-center justify-between transition-all text-xs border border-transparent hover:border-slate-800/40 text-white font-bold group"
+                      >
+                        <div className="flex items-center gap-2.5">
+                          <span className="p-1 rounded bg-slate-800 text-cyan-400 shrink-0">⚡</span>
+                          <span>{isAr ? action.labelAr : action.label}</span>
+                        </div>
+                        {action.shortcut && (
+                          <span className="text-[9px] bg-slate-800 text-slate-500 px-1.5 py-0.5 rounded border border-slate-700 font-mono">
+                            {action.shortcut}
+                          </span>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {filteredPatients.length === 0 && filteredPages.length === 0 && filteredActions.length === 0 && (
+                <div className="text-center py-6 text-slate-500 font-bold text-xs">
+                  {isAr ? 'لا توجد نتائج مطابقة لبحثك 🔍' : 'No matching results found 🔍'}
+                </div>
+              )}
+
+            </div>
+          </div>
+        </div>
+      )}
+
       <ToastContainer />
     </div>
+  );
+}
+
+// ─── HomeRedirect component ──────────────────────────────────────────────────
+function HomeRedirect() {
+  const { isLoggedIn, role, activePage } = useClinic();
+  
+  if (!isLoggedIn) {
+    return <Navigate to="/login" replace />;
+  }
+
+  const defaultPage = role === 'doctor' ? 'registry'
+                    : role === 'pharmacy' ? 'pos'
+                    : role === 'receptionist' ? 'register'
+                    : role === 'radiology' ? 'orders'
+                    : role === 'patient' ? 'home'
+                    : 'dashboard';
+
+  const tab = activePage || defaultPage;
+  return <Navigate to={`/${role}/${tab}`} replace />;
+}
+
+// ─── Inner App ────────────────────────────────────────────────────────────────
+function InnerApp() {
+  const { isLoggedIn } = useClinic();
+
+  return (
+    <Routes>
+      {/* Public Route */}
+      <Route path="/login" element={
+        !isLoggedIn ? (
+          <div className="min-h-screen w-screen overflow-y-auto relative flex flex-col justify-center bg-[#f0f7f4] dark:bg-[#030806]">
+            <Background />
+            <Suspense fallback={<LoadingSpinner message="Loading login..." />}>
+              <AuthView />
+            </Suspense>
+          </div>
+        ) : (
+          <Navigate to="/" replace />
+        )
+      } />
+
+      {/* Protected Routes */}
+      <Route element={<ProtectedRoute allowedRoles={['receptionist', 'doctor', 'pharmacy', 'radiology', 'patient', 'manager', 'admin']} />}>
+        <Route path="/:rolePath" element={<RoleLayout />} />
+        <Route path="/:rolePath/:tabPath" element={<RoleLayout />} />
+      </Route>
+
+      {/* Home redirect */}
+      <Route path="/" element={<HomeRedirect />} />
+      
+      {/* Fallback */}
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
   );
 }
 
 // ─── Root ─────────────────────────────────────────────────────────────────────
 export default function App() {
   return (
-    <ClinicProvider>
-      <InnerApp />
-    </ClinicProvider>
+    <ErrorBoundary>
+      <BrowserRouter>
+        <ClinicProvider>
+          <InnerApp />
+        </ClinicProvider>
+      </BrowserRouter>
+    </ErrorBoundary>
   );
 }

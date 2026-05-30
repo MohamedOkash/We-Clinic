@@ -26,91 +26,73 @@ RULES:
   approval is required
 `;
 
-export async function callGemini(messages, customSystemPrompt = null) {
+export async function callGemini(messages, systemPrompt = MEDICAL_SYSTEM_PROMPT) {
+  // Try calling the backend proxy first to avoid exposing API keys in the frontend bundle
+  try {
+    const proxyEndpoint = '/api/gemini';
+    const response = await fetch(proxyEndpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ messages, systemPrompt })
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      return data.text || data.reply || 'Error';
+    }
+  } catch (proxyError) {
+    console.warn('AI proxy server failed. Trying direct API call fallback...');
+  }
+
+  // Direct client-side fallback if backend proxy fails
   const API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
-  
   if (!API_KEY) {
     throw new Error(
-      "VITE_GEMINI_API_KEY not found in .env file. " +
-      "Get your free key from: https://aistudio.google.com/apikey"
+      "Gemini API Key is not configured on the backend proxy, and VITE_GEMINI_API_KEY was not found in the frontend environment variables."
     );
   }
 
-  const endpoint = 
-    `https://generativelanguage.googleapis.com/v1beta/models/` +
-    `gemini-2.0-flash:generateContent?key=${API_KEY}`;
-
-  // Convert input message format to Gemini format
-  const geminiMessages = messages
-    .filter(m => m.role !== "system")
-    .map(m => ({
-      role: m.role === "assistant" ? "model" : "user",
-      parts: [{ text: m.content }]
-    }));
-
-  const body = {
-    system_instruction: {
-      parts: [{ text: customSystemPrompt || MEDICAL_SYSTEM_PROMPT }]
-    },
-    contents: geminiMessages,
-    generationConfig: {
-      temperature: 0.7,
-      maxOutputTokens: 1500,
-      topP: 0.9
-    },
-    safetySettings: [
-      {
-        category: "HARM_CATEGORY_DANGEROUS_CONTENT",
-        threshold: "BLOCK_ONLY_HIGH"
-      },
-      {
-        category: "HARM_CATEGORY_HARASSMENT",
-        threshold: "BLOCK_ONLY_HIGH"
-      },
-      {
-        category: "HARM_CATEGORY_HATE_SPEECH",
-        threshold: "BLOCK_ONLY_HIGH"
+  const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${API_KEY}`;
+  
+  const response = await fetch(endpoint, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      system_instruction: { parts: [{ text: systemPrompt }] },
+      contents: messages.map(m => ({
+        role: m.role === 'assistant' || m.role === 'model' ? 'model' : 'user',
+        parts: [{ text: m.content || m.text || '' }]
+      })),
+      generationConfig: {
+        temperature: 0.7,
+        maxOutputTokens: 1500,
       }
-    ]
-  };
+    })
+  });
 
-  try {
-    const response = await fetch(endpoint, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body)
-    });
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error?.message || "Gemini API error");
-    }
-
-    const data = await response.json();
-    
-    const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
-    
-    if (!text) {
-      // Check if blocked by safety filters
-      const reason = data.candidates?.[0]?.finishReason;
-      if (reason === "SAFETY") {
-        return "⚠️ تم حجب الرد بسبب فلاتر الأمان. يرجى إعادة صياغة السؤال.";
-      }
-      throw new Error("Empty response from Gemini");
-    }
-
-    return text;
-
-  } catch (error) {
-    console.error("Gemini API Error:", error);
-    throw error;
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.error?.message || `Google API status ${response.status}`);
   }
+
+  const data = await response.json();
+  const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+  
+  if (!text) {
+    const reason = data.candidates?.[0]?.finishReason;
+    if (reason === 'SAFETY') {
+      return "⚠️ تم حجب الرد بسبب فلاتر الأمان. يرجى إعادة صياغة السؤال.";
+    }
+    throw new Error('Empty response from Gemini');
+  }
+
+  return text;
 }
 
 // Simpler version for one-shot questions (no history)
-export async function askGemini(prompt, systemPrompt = null) {
+export async function askGemini(prompt, systemPrompt = MEDICAL_SYSTEM_PROMPT) {
   return callGemini(
-    [{ role: "user", content: prompt }],
+    [{ role: 'user', content: prompt }],
     systemPrompt
   );
 }

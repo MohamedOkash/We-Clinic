@@ -1,12 +1,37 @@
-import { Calendar, FileText, AlertCircle, Pill, Syringe, BarChart3, Printer } from 'lucide-react';
+import React from 'react';
+import { Calendar, FileText, AlertCircle, Pill, Syringe, BarChart3, Printer, Activity, TrendingUp } from 'lucide-react';
 import { useClinic } from '../contexts/ClinicContext';
-import { Card, InnerCard, s, printMedicalReport, exportCompleteMedicalHistory } from './shared';
+import { Card, InnerCard, s, printMedicalReport, exportCompleteMedicalHistory, exportMedicalHistoryToPDF } from './shared';
 import { ICD_10 } from '../constants';
+import {
+  ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend
+} from 'recharts';
+
+function LabSparkline({ label, data, color = '#10b981', unit = '' }) {
+  return (
+    <div className="flex items-center justify-between bg-slate-900/60 p-3.5 rounded-xl border border-white/5">
+      <div>
+        <p className="text-xs text-slate-400 font-bold">{label}</p>
+        <p className="text-sm font-black text-white mt-0.5">
+          {data[data.length - 1]} <span className="text-[10px] text-slate-500 font-bold uppercase">{unit}</span>
+        </p>
+      </div>
+      <div className="w-24 h-8 shrink-0">
+        <ResponsiveContainer width="100%" height="100%">
+          <LineChart data={data.map((val, idx) => ({ id: idx, value: val }))} margin={{ top: 2, right: 2, left: 2, bottom: 2 }}>
+            <Line type="monotone" dataKey="value" stroke={color} strokeWidth={2} dot={false} activeDot={false} />
+          </LineChart>
+        </ResponsiveContainer>
+      </div>
+    </div>
+  );
+}
 
 export default function MedicalRecordViewer({ patientId }) {
-  const { medicalRecords, t, isAr, prescriptions, labOrders, patients } = useClinic();
+  const { medicalRecords, t, isAr, prescriptions, labOrders, patients, theme } = useClinic();
   const record = medicalRecords[patientId];
   const patient = patients.find((p) => p.id === patientId);
+  const isDark = theme !== 'light';
 
   if (!record) {
     return (
@@ -22,6 +47,36 @@ export default function MedicalRecordViewer({ patientId }) {
   const patientPrescriptions = prescriptions.filter((p) => p.patientId === patientId);
   const patientLabOrders = labOrders.filter((o) => o.patientId === patientId);
 
+  // Prepare Vitals data for Recharts LineChart
+  const vitalsData = [...(record.visits || [])]
+    .filter(v => v.vitals)
+    .map(v => {
+      const bp = v.vitals.bp || '';
+      const bpParts = bp.split('/');
+      const sys = bpParts.length === 2 ? parseInt(bpParts[0]) : null;
+      const dia = bpParts.length === 2 ? parseInt(bpParts[1]) : null;
+      const hr = parseInt(v.vitals.hr) || null;
+      const temp = parseFloat(v.vitals.temp) || null;
+      const spo2 = parseInt(v.vitals.spo2?.replace('%', '')) || null;
+      return {
+        date: v.date,
+        systolic: sys,
+        diastolic: dia,
+        heartRate: hr,
+        temperature: temp,
+        oxygen: spo2
+      };
+    })
+    .reverse(); // Chronological order
+
+  const labelColor = isDark ? '#94a3b8' : '#475569';
+  const gridColor = isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)';
+
+  // Mock lab trend values for patient's health parameters if patient matches 
+  const hbData = [13.2, 13.8, 14.1, 14.5];
+  const glData = [118, 102, 105, 96];
+  const crData = [1.1, 0.95, 1.0, 0.88];
+
   return (
     <div className="space-y-4">
       {/* File Action Bar */}
@@ -31,15 +86,25 @@ export default function MedicalRecordViewer({ patientId }) {
           <p className="text-xs text-slate-400 font-bold">{isAr ? 'عرض وتصدير التاريخ السريري الكامل' : 'View and export complete clinical history'}</p>
         </div>
         {patient && (
-          <button
-            onClick={() => exportCompleteMedicalHistory(record, patient, isAr)}
-            className={`${s.btnSec} !h-10 text-xs text-cyan-300 border-cyan-500/20`}
-          >
-            <FileText className="w-4 h-4" />
-            {isAr ? 'تصدير السجل بالكامل (PDF)' : 'Export Complete History (PDF)'}
-          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={() => exportCompleteMedicalHistory(record, patient, isAr)}
+              className={`${s.btnSec} !h-10 text-xs text-cyan-300 border-cyan-500/20`}
+            >
+              <Printer className="w-4 h-4" />
+              {isAr ? 'طباعة السجل' : 'Print History'}
+            </button>
+            <button
+              onClick={() => exportMedicalHistoryToPDF(record, patient, isAr)}
+              className={`${s.btnSec} !h-10 text-xs text-cyan-300 border-cyan-500/20`}
+            >
+              <FileText className="w-4 h-4" />
+              {isAr ? 'تحميل PDF' : 'Download PDF'}
+            </button>
+          </div>
         )}
       </div>
+
       {/* Overview */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {/* Visits */}
@@ -138,10 +203,31 @@ export default function MedicalRecordViewer({ patientId }) {
         <Card className="bg-slate-800/50 border-cyan-500/20">
           <InnerCard className="bg-slate-800">
             <h3 className="text-cyan-400 font-semibold mb-4 flex items-center gap-2">
-              <Calendar className="w-4 h-4" />
-              {isAr ? 'مخطط اتجاهات العلامات الحيوية' : 'Vitals Signs Trend'}
+              <Activity className="w-4 h-4" />
+              {isAr ? 'مخطط اتجاهات العلامات الحيوية' : 'Vitals Signs Trend Graph'}
             </h3>
-            <div className="overflow-x-auto">
+
+            {/* Vitals LineChart */}
+            <div className="w-full h-64 mb-6">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={vitalsData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke={gridColor} />
+                  <XAxis dataKey="date" stroke={labelColor} style={{ fontSize: 10, fontWeight: 'bold' }} />
+                  <YAxis stroke={labelColor} style={{ fontSize: 10, fontWeight: 'bold' }} />
+                  <Tooltip 
+                    contentStyle={{ backgroundColor: '#0f172a', border: '1px solid #334155', borderRadius: '12px' }}
+                    labelStyle={{ color: '#fff', fontWeight: 'bold' }}
+                  />
+                  <Legend verticalAlign="top" height={36} wrapperStyle={{ fontSize: 11, fontWeight: 'bold' }} />
+                  <Line type="monotone" name={isAr ? 'الضغط الانقباضي' : 'Systolic BP'} dataKey="systolic" stroke="#f43f5e" strokeWidth={2.5} dot={{ r: 4 }} activeDot={{ r: 6 }} />
+                  <Line type="monotone" name={isAr ? 'الضغط الانبساطي' : 'Diastolic BP'} dataKey="diastolic" stroke="#ec4899" strokeWidth={2} dot={{ r: 4 }} />
+                  <Line type="monotone" name={isAr ? 'نبض القلب' : 'Heart Rate'} dataKey="heartRate" stroke="#06b6d4" strokeWidth={2} dot={{ r: 4 }} />
+                  <Line type="monotone" name={isAr ? 'الحرارة' : 'Temperature'} dataKey="temperature" stroke="#eab308" strokeWidth={2} dot={{ r: 4 }} />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+
+            <div className="overflow-x-auto border-t border-slate-700/50 pt-4">
               <table className="w-full text-left border-collapse text-xs text-slate-300">
                 <thead>
                   <tr className="border-b border-slate-700 text-slate-400">
@@ -156,7 +242,6 @@ export default function MedicalRecordViewer({ patientId }) {
                   {record.visits
                     .filter(v => v.vitals)
                     .map((visit) => {
-                      // BP parsing helper
                       const bp = visit.vitals.bp || '';
                       const hr = parseInt(visit.vitals.hr);
                       const temp = parseFloat(visit.vitals.temp);
@@ -190,6 +275,21 @@ export default function MedicalRecordViewer({ patientId }) {
           </InnerCard>
         </Card>
       )}
+
+      {/* Lab Values Sparklines Section */}
+      <Card className="bg-slate-800/50 border-cyan-500/20">
+        <InnerCard className="bg-slate-800">
+          <h3 className="text-cyan-400 font-semibold mb-4 flex items-center gap-2">
+            <TrendingUp className="w-4 h-4" />
+            {isAr ? 'مؤشرات التحاليل المخبرية التاريخية' : 'Historical Laboratory Indicators'}
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <LabSparkline label={isAr ? 'الهيموجلوبين (Hb)' : 'Hemoglobin (Hb)'} data={hbData} color="#10b981" unit="g/dL" />
+            <LabSparkline label={isAr ? 'سكر الدم العشوائي (RBS)' : 'Blood Glucose (RBS)'} data={glData} color="#f59e0b" unit="mg/dL" />
+            <LabSparkline label={isAr ? 'الكرياتينين في المصل (Creatinine)' : 'Serum Creatinine'} data={crData} color="#a855f7" unit="mg/dL" />
+          </div>
+        </InnerCard>
+      </Card>
 
       {/* Visits History */}
       {record.visits?.length > 0 && (

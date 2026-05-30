@@ -1,0 +1,131 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function getUserData() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+    
+    function getUserRole() {
+      return getUserData().role;
+    }
+    
+    function isSuperAdmin() {
+      return request.auth.token.email == 'm.okash@we_clinic.com' || getUserRole() == 'admin';
+    }
+
+    // Rules for Users
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated() && (request.auth.uid == userId || isSuperAdmin());
+    }
+
+    // Rules for Organizations
+    match /organizations/{orgId} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated() && isSuperAdmin();
+    }
+
+    // Rules for Patients
+    match /patients/{patientId} {
+      allow read: if isAuthenticated();
+      allow create, update: if isAuthenticated() && (
+        getUserRole() in ['admin', 'manager', 'receptionist', 'doctor']
+      );
+      allow delete: if isAuthenticated() && (getUserRole() in ['admin', 'manager']);
+    }
+
+    // Rules for Medical Records
+    match /medical_records/{recordId} {
+      allow read: if isAuthenticated() && (
+        getUserRole() in ['admin', 'manager', 'doctor', 'radiology'] ||
+        (getUserRole() == 'patient' && request.auth.uid == recordId)
+      );
+      allow write: if isAuthenticated() && (
+        getUserRole() in ['admin', 'doctor', 'radiology']
+      );
+    }
+
+    // Rules for Appointments
+    match /appointments/{apptId} {
+      allow read: if isAuthenticated();
+      allow create, update: if isAuthenticated() && (
+        getUserRole() in ['admin', 'manager', 'receptionist', 'doctor', 'patient']
+      );
+      allow delete: if isAuthenticated() && (getUserRole() in ['admin', 'manager']);
+    }
+
+    // Rules for Queue
+    match /queue/{queueId} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated() && (
+        getUserRole() in ['admin', 'manager', 'receptionist', 'doctor']
+      );
+    }
+
+    // Rules for Prescriptions
+    match /prescriptions/{rxId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && (getUserRole() in ['admin', 'doctor']);
+      allow update: if isAuthenticated() && (getUserRole() in ['admin', 'doctor', 'pharmacy']);
+      allow delete: if isAuthenticated() && (getUserRole() in ['admin', 'manager']);
+    }
+
+    // Rules for Inventory
+    match /inventory/{itemId} {
+      allow read: if isAuthenticated();
+      allow create, update: if isAuthenticated() && (
+        getUserRole() in ['admin', 'manager', 'pharmacy']
+      );
+      allow delete: if isAuthenticated() && (getUserRole() in ['admin', 'manager']);
+    }
+
+    // Rules for Inquiries
+    match /inquiries/{inquiryId} {
+      allow read: if isAuthenticated();
+      allow create, update: if isAuthenticated() && (
+        getUserRole() in ['admin', 'doctor', 'pharmacy', 'patient']
+      );
+      allow delete: if isAuthenticated() && (getUserRole() in ['admin', 'manager']);
+    }
+
+    // Rules for Scans (Radiology)
+    match /scans/{scanId} {
+      allow read: if isAuthenticated();
+      allow create, update: if isAuthenticated() && (
+        getUserRole() in ['admin', 'doctor', 'radiology']
+      );
+      allow delete: if isAuthenticated() && (getUserRole() in ['admin', 'manager']);
+    }
+
+    // Rules for Lab Orders
+    match /lab_orders/{orderId} {
+      allow read: if isAuthenticated();
+      allow create, update: if isAuthenticated() && (
+        getUserRole() in ['admin', 'doctor', 'radiology']
+      );
+      allow delete: if isAuthenticated() && (getUserRole() in ['admin', 'manager']);
+    }
+
+    // Rules for Invoices
+    match /invoices/{invoiceId} {
+      allow read: if isAuthenticated();
+      allow create, update: if isAuthenticated() && (
+        getUserRole() in ['admin', 'manager', 'receptionist', 'pharmacy']
+      );
+      allow delete: if isAuthenticated() && (getUserRole() in ['admin', 'manager']);
+    }
+
+    // Rules for Notifications
+    match /notifications/{notifId} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated();
+    }
+  }
+}
