@@ -52,34 +52,49 @@ export async function callGemini(messages, systemPrompt = MEDICAL_SYSTEM_PROMPT)
     );
   }
 
-  const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${API_KEY}`;
-  
-  const response = await fetch(endpoint, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      system_instruction: { parts: [{ text: systemPrompt }] },
-      contents: messages.map(m => ({
-        role: m.role === 'assistant' || m.role === 'model' ? 'model' : 'user',
-        parts: [{ text: m.content || m.text || '' }]
-      })),
-      generationConfig: {
-        temperature: 0.7,
-        maxOutputTokens: 1500,
-      }
-    })
-  });
+  const callDirect = async (modelName) => {
+    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${API_KEY}`;
+    const response = await fetch(endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        system_instruction: { parts: [{ text: systemPrompt }] },
+        contents: messages.map(m => ({
+          role: m.role === 'assistant' || m.role === 'model' ? 'model' : 'user',
+          parts: [{ text: m.content || m.text || '' }]
+        })),
+        generationConfig: {
+          temperature: 0.7,
+          maxOutputTokens: 1500,
+        }
+      })
+    });
+    return { status: response.status, data: await response.json().catch(() => ({})) };
+  };
 
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.error?.message || `Google API status ${response.status}`);
+  let directResult = await callDirect('gemini-2.0-flash');
+  const isDirectQuotaExceeded = directResult.status === 429 || 
+    (directResult.data.error?.message?.includes('Quota exceeded') || false) ||
+    (directResult.data.error?.message?.includes('quota') || false) ||
+    (directResult.data.error?.message?.includes('limit') || false);
+
+  if (isDirectQuotaExceeded) {
+    console.warn('Gemini 2.0 Flash direct quota exceeded. Trying Gemini 1.5 Flash...');
+    directResult = await callDirect('gemini-1.5-flash');
   }
 
-  const data = await response.json();
-  const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+  if (directResult.status !== 200) {
+    const errorMsg = directResult.data.error?.message || `Google API status ${directResult.status}`;
+    if (directResult.status === 429 || errorMsg.includes('Quota exceeded') || errorMsg.includes('quota') || errorMsg.includes('limit')) {
+      return "⚠️ لقد تم تجاوز الحد الأقصى للاستخدام المجاني للذكاء الاصطناعي حالياً. يرجى الانتظار دقيقة وإعادة المحاولة.";
+    }
+    throw new Error(errorMsg);
+  }
+
+  const text = directResult.data.candidates?.[0]?.content?.parts?.[0]?.text;
   
   if (!text) {
-    const reason = data.candidates?.[0]?.finishReason;
+    const reason = directResult.data.candidates?.[0]?.finishReason;
     if (reason === 'SAFETY') {
       return "⚠️ تم حجب الرد بسبب فلاتر الأمان. يرجى إعادة صياغة السؤال.";
     }

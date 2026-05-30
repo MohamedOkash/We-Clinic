@@ -51,8 +51,8 @@ const limiter = rateLimit({
 // Apply rate limiting specifically to the Gemini proxy route
 app.use('/api/gemini', limiter);
 
-// Proxy POST route for Gemini
-app.post('/api/gemini', (req, res) => {
+// Proxy POST route for Gemini with automatic model fallback
+app.post('/api/gemini', async (req, res) => {
   try {
     const { messages, systemPrompt } = req.body;
 
@@ -75,8 +75,6 @@ app.post('/api/gemini', (req, res) => {
       return res.status(500).json({ error: 'Google Gemini API key not configured on the backend server.' });
     }
 
-    // Call Google Gemini 2.0 Flash API securely
-    const targetUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
     const payload = JSON.stringify({
       system_instruction: { parts: [{ text: systemPrompt || '' }] },
       contents: sanitizedMessages,
@@ -86,39 +84,63 @@ app.post('/api/gemini', (req, res) => {
       }
     });
 
-    const geminiReq = https.request(targetUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Content-Length': Buffer.byteLength(payload)
-      }
-    }, (geminiRes) => {
-      let responseData = '';
-      geminiRes.on('data', d => {
-        responseData += d;
-      });
-
-      geminiRes.on('end', () => {
-        try {
-          const parsedData = JSON.parse(responseData);
-          if (geminiRes.statusCode !== 200) {
-            return res.status(geminiRes.statusCode).json(parsedData);
+    const callModel = (modelName) => {
+      return new Promise((resolve, reject) => {
+        const targetUrl = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
+        const geminiReq = https.request(targetUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Content-Length': Buffer.byteLength(payload)
           }
-          const text = parsedData.candidates?.[0]?.content?.parts?.[0]?.text || 'Error';
-          res.json({ text });
-        } catch (parseErr) {
-          res.status(500).json({ error: 'Failed to parse Google API response', details: parseErr.message });
-        }
+        }, (geminiRes) => {
+          let responseData = '';
+          geminiRes.on('data', d => {
+            responseData += d;
+          });
+
+          geminiRes.on('end', () => {
+            try {
+              const parsedData = JSON.parse(responseData);
+              resolve({ statusCode: geminiRes.statusCode, data: parsedData });
+            } catch (parseErr) {
+              reject(parseErr);
+            }
+          });
+        });
+
+        geminiReq.on('error', reject);
+        geminiReq.write(payload);
+        geminiReq.end();
       });
-    });
+    };
 
-    geminiReq.on('error', (err) => {
-      console.error('Error forwarding request to Gemini:', err);
-      res.status(500).json({ error: 'Failed to communicate with Google Gemini API', details: err.message });
-    });
+    try {
+      let result = await callModel('gemini-2.0-flash');
+      const isQuotaExceeded = result.statusCode === 429 || 
+        (result.data?.error?.message?.includes('Quota exceeded') || false) || 
+        (result.data?.error?.message?.includes('quota') || false) ||
+        (result.data?.error?.message?.includes('limit') || false);
 
-    geminiReq.write(payload);
-    geminiReq.end();
+      if (isQuotaExceeded) {
+        console.warn('Gemini 2.0 Flash quota exceeded. Falling back to Gemini 1.5 Flash...');
+        result = await callModel('gemini-1.5-flash');
+      }
+
+      if (result.statusCode !== 200) {
+        const errMsg = result.data?.error?.message || `Google API status ${result.statusCode}`;
+        if (result.statusCode === 429 || errMsg.includes('Quota exceeded') || errMsg.includes('quota') || errMsg.includes('limit')) {
+          return res.status(429).json({ error: 'لقد تم تجاوز الحد الأقصى للاستخدام المجاني للذكاء الاصطناعي حالياً. يرجى الانتظار دقيقة وإعادة المحاولة.' });
+        }
+        return res.status(result.statusCode).json(result.data);
+      }
+
+      const text = result.data.candidates?.[0]?.content?.parts?.[0]?.text || 'Error';
+      res.json({ text });
+    } catch (apiError) {
+      console.error('Error forwarding request to Gemini:', apiError);
+      res.status(500).json({ error: 'Failed to communicate with Google Gemini API', details: apiError.message });
+    }
 
   } catch (error) {
     console.error('Proxy internal error:', error);

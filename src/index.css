@@ -13,35 +13,35 @@ html {
 }
 
 :root {
-  --bg-main: #f0f7f4;              /* Light mint green base */
-  --bg-surface: #ffffff;           /* Clean white card surface */
-  --bg-input: #f4faf7;             /* Very light mint background for inputs */
-  --border-input: #b2dfcd;         /* Soft green border with high contrast */
-  --border-input-focus: #10b981;   /* Focus emerald green */
-  --text-primary: #062f22;         /* Deep forest green */
-  --text-secondary: #0f513d;       /* Deep emerald green */
-  --text-muted: #198754;           /* Medium forest green */
-  --text-placeholder: #588e7b;     /* Readable dark-green placeholder */
-  --border-color: rgba(16, 185, 129, 0.12);
-  --border-color-inner: rgba(16, 185, 129, 0.08);
-  --shadow-color: rgba(16, 185, 129, 0.04);
-  --calendar-filter: invert(19%) sepia(85%) saturate(735%) hue-rotate(119deg) brightness(30%) contrast(97%); /* Emerald green icon in light mode */
+  --bg-main: #f8fafc;              /* Slate-50, clean normal white/light background */
+  --bg-surface: #ffffff;           /* Pure white card surface */
+  --bg-input: #ffffff;             /* White background for inputs */
+  --border-input: #cbd5e1;         /* Slate-300 soft border */
+  --border-input-focus: #3b82f6;   /* Focus blue */
+  --text-primary: #0f172a;         /* Slate-900 primary dark text */
+  --text-secondary: #334155;       /* Slate-700 secondary dark text */
+  --text-muted: #64748b;           /* Slate-500 muted text */
+  --text-placeholder: #94a3b8;     /* Slate-400 placeholder */
+  --border-color: rgba(15, 23, 42, 0.08); /* Soft slate border */
+  --border-color-inner: rgba(15, 23, 42, 0.04);
+  --shadow-color: rgba(15, 23, 42, 0.04);
+  --calendar-filter: none;         /* Default icon */
 }
 
 .dark {
-  --bg-main: #030806;              /* Dark forest green base */
-  --bg-surface: #0a1410;           /* Dark forest green card surface */
-  --bg-input: #050a08;             /* Deep blackish-green input background */
-  --border-input: rgba(16, 185, 129, 0.25);
-  --border-input-focus: #34d399;   /* Focus mint green */
-  --text-primary: #e6fcf5;         /* Light mint tint */
-  --text-secondary: #a3eed2;       /* Light emerald */
-  --text-muted: #34d399;           /* Mint */
-  --text-placeholder: #2e745b;     /* Mint placeholder for dark mode */
-  --border-color: rgba(16, 185, 129, 0.15);
-  --border-color-inner: rgba(16, 185, 129, 0.08);
-  --shadow-color: rgba(0, 0, 0, 0.7);
-  --calendar-filter: invert(90%) sepia(20%) saturate(1000%) hue-rotate(100deg) brightness(100%) contrast(100%); /* Mint icon in dark mode */
+  --bg-main: #070a13;              /* Rich, deep soft black/navy base */
+  --bg-surface: #0f1423;           /* Darker card surface */
+  --bg-input: #0b0f1d;             /* Dark input background */
+  --border-input: rgba(255, 255, 255, 0.12); /* Soft white border */
+  --border-input-focus: #3b82f6;   /* Focus blue */
+  --text-primary: #f8fafc;         /* Slate-50 bright primary text */
+  --text-secondary: #cbd5e1;       /* Slate-300 secondary text */
+  --text-muted: #94a3b8;           /* Slate-400 muted text */
+  --text-placeholder: #475569;     /* Slate-600 placeholder */
+  --border-color: rgba(255, 255, 255, 0.08); /* Soft transparent border */
+  --border-color-inner: rgba(255, 255, 255, 0.04);
+  --shadow-color: rgba(0, 0, 0, 0.5);
+  --calendar-filter: invert(100%); /* Inverted for dark mode */
 }
 
 body {
@@ -61,22 +61,22 @@ body {
 
 /* ─── Theme-aware Overrides for Light Mode ─── */
 .light .text-white {
-  color: #062f22 !important; /* Deep forest green */
+  color: #0f172a !important; /* Slate-900 */
 }
 .light .text-slate-100 {
-  color: #0c4a35 !important; /* Dark green-800 */
+  color: #1e293b !important; /* Slate-800 */
 }
 .light .text-slate-200 {
-  color: #0f513d !important; /* Dark green-700 */
+  color: #334155 !important; /* Slate-700 */
 }
 .light .text-slate-300 {
-  color: #198754 !important; /* Green-600 */
+  color: #475569 !important; /* Slate-600 */
 }
 .light .text-slate-400 {
-  color: #20c997 !important; /* Medium green/teal */
+  color: #64748b !important; /* Slate-500 */
 }
 .light .text-slate-500 {
-  color: #48c78e !important; /* Light green */
+  color: #94a3b8 !important; /* Slate-400 */
 }
 
 /* Exclude colored elements so their text stays readable (white) */
