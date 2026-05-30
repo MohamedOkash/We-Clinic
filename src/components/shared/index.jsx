@@ -108,35 +108,7 @@ export function Skeleton({ className = '', variant = 'rect' }) {
   return <div className={`skeleton ${variants[variant]} ${className}`} />;
 }
 
-export function SkeletonCard() {
-  return (
-    <div className={`${s.inner} p-5 flex flex-col gap-3`}>
-      <div className="flex items-center gap-4">
-        <Skeleton variant="avatar" />
-        <div className="flex-1 flex flex-col gap-2">
-          <Skeleton variant="title" />
-          <Skeleton className="h-3 w-2/5 rounded" />
-        </div>
-      </div>
-      <Skeleton className="h-3 w-full rounded" />
-      <Skeleton className="h-3 w-4/5 rounded" />
-    </div>
-  );
-}
 
-// ─── Empty State ──────────────────────────────────────────────────────────────
-export function EmptyState({ icon: Icon = Inbox, title, description, action }) {
-  return (
-    <div className="flex flex-col items-center justify-center py-16 px-6 text-center animate-fade-in">
-      <div className="w-20 h-20 rounded-3xl bg-slate-800/80 border border-white/[0.06] flex items-center justify-center mb-5 shadow-inner-deep">
-        <Icon className="w-9 h-9 text-slate-500" />
-      </div>
-      <h4 className="font-bold text-lg text-slate-300 mb-2">{title}</h4>
-      {description && <p className="text-sm text-slate-500 font-medium max-w-xs leading-relaxed">{description}</p>}
-      {action && <div className="mt-5">{action}</div>}
-    </div>
-  );
-}
 
 // ─── Animated Counter ─────────────────────────────────────────────────────────
 export function AnimatedCounter({ value, duration = 800, prefix = '', suffix = '' }) {
@@ -904,4 +876,9 @@ export function exportMedicalHistoryToPDF(record, patient, isAr = true) {
 
   doc.save(`medical_record_${patient.id}_${Date.now()}.pdf`);
 }
+
+export { default as SkeletonCard } from './SkeletonCard';
+export { default as EmptyState } from './EmptyState';
+export { default as ConfirmDialog } from './ConfirmDialog';
+
 

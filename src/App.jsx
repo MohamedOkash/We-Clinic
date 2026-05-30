@@ -210,6 +210,31 @@ function Sidebar({ onOpenSettings }) {
 // ─── Top Navbar Component ──────────────────────────────────────────────────────
 function TopNav() {
   const { t, isAr, currentOrganization, setIsMenuOpen, isMenuOpen, activePage, role } = useClinic();
+  const [deferredPrompt, setDeferredPrompt] = useState(null);
+
+  useEffect(() => {
+    const handlePrompt = (e) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+    };
+    const handleAppInstalled = () => {
+      setDeferredPrompt(null);
+    };
+    window.addEventListener('beforeinstallprompt', handlePrompt);
+    window.addEventListener('appinstalled', handleAppInstalled);
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handlePrompt);
+      window.removeEventListener('appinstalled', handleAppInstalled);
+    };
+  }, []);
+
+  const handleInstallClick = async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    console.log(`PWA Install outcome: ${outcome}`);
+    setDeferredPrompt(null);
+  };
   
   const items = SIDEBAR_ITEMS[role] || [];
   const currentItem = items.find(item => item.page === activePage);
@@ -233,6 +258,16 @@ function TopNav() {
       </div>
 
       <div className="flex items-center gap-3">
+        {deferredPrompt && (
+          <button
+            onClick={handleInstallClick}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-br from-violet-600 to-fuchsia-600 text-white font-bold text-xs shadow-md border border-fuchsia-400/30 animate-pulse hover:scale-105 active:scale-95 transition-all cursor-pointer keep-text-white"
+          >
+            <span>🏥</span>
+            <span>{isAr ? 'تثبيت التطبيق' : 'Install App'}</span>
+          </button>
+        )}
+
         {role === 'admin' ? (
           <div className="hidden sm:flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-cyan-500/10 border border-cyan-500/20 dark:border-cyan-400/20 min-w-0 shadow-inner">
             <Shield className="w-4 h-4 text-cyan-600 dark:text-cyan-400 shrink-0" />
@@ -567,35 +602,54 @@ function HomeRedirect() {
 // ─── Inner App ────────────────────────────────────────────────────────────────
 function InnerApp() {
   const { isLoggedIn } = useClinic();
+  const [isOffline, setIsOffline] = useState(!navigator.onLine);
+
+  useEffect(() => {
+    const handleOnline = () => setIsOffline(false);
+    const handleOffline = () => setIsOffline(true);
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
 
   return (
-    <Routes>
-      {/* Public Route */}
-      <Route path="/login" element={
-        !isLoggedIn ? (
-          <div className="min-h-screen w-screen overflow-y-auto relative flex flex-col justify-center bg-[#f0f7f4] dark:bg-[#030806]">
-            <Background />
-            <Suspense fallback={<LoadingSpinner message="Loading login..." />}>
-              <AuthView />
-            </Suspense>
-          </div>
-        ) : (
-          <Navigate to="/" replace />
-        )
-      } />
+    <>
+      {isOffline && (
+        <div className="bg-yellow-500 text-slate-950 font-bold text-xs text-center py-2 px-4 z-[999] shrink-0 select-none border-b border-yellow-600/40 w-full">
+          ⚠️ {document.documentElement.lang === 'ar' ? 'أنت تعمل حالياً في وضع عدم الاتصال (أوفلاين) - بعض الميزات قد لا تكون متوفرة' : 'You are currently offline - some features might be unavailable'}
+        </div>
+      )}
+      <Routes>
+        {/* Public Route */}
+        <Route path="/login" element={
+          !isLoggedIn ? (
+            <div className="min-h-screen w-screen overflow-y-auto relative flex flex-col justify-center bg-[#f0f7f4] dark:bg-[#030806]">
+              <Background />
+              <Suspense fallback={<LoadingSpinner message="Loading login..." />}>
+                <AuthView />
+              </Suspense>
+            </div>
+          ) : (
+            <Navigate to="/" replace />
+          )
+        } />
 
-      {/* Protected Routes */}
-      <Route element={<ProtectedRoute allowedRoles={['receptionist', 'doctor', 'pharmacy', 'radiology', 'patient', 'manager', 'admin']} />}>
-        <Route path="/:rolePath" element={<RoleLayout />} />
-        <Route path="/:rolePath/:tabPath" element={<RoleLayout />} />
-      </Route>
+        {/* Protected Routes */}
+        <Route element={<ProtectedRoute allowedRoles={['receptionist', 'doctor', 'pharmacy', 'radiology', 'patient', 'manager', 'admin']} />}>
+          <Route path="/:rolePath" element={<RoleLayout />} />
+          <Route path="/:rolePath/:tabPath" element={<RoleLayout />} />
+        </Route>
 
-      {/* Home redirect */}
-      <Route path="/" element={<HomeRedirect />} />
-      
-      {/* Fallback */}
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+        {/* Home redirect */}
+        <Route path="/" element={<HomeRedirect />} />
+        
+        {/* Fallback */}
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </>
   );
 }
 
